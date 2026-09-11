@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad3" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#14120f"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <linearGradient id="goldStroke3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4E4A6"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#997711"/>
+    </linearGradient>
+    <radialGradient id="lotusGlow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="450" fill="url(#bgGrad3)"/>
+  <circle cx="400" cy="225" r="160" fill="url(#lotusGlow)"/>
+
+  <!-- Orbital Halo Lines -->
+  <g stroke="url(#goldStroke3)" fill="none" opacity="0.4">
+    <circle cx="400" cy="225" r="135" stroke-width="1" stroke-dasharray="3 5"/>
+    <ellipse cx="400" cy="225" rx="160" ry="60" stroke-width="0.8" transform="rotate(-15 400 225)"/>
+  </g>
+
+  <!-- Stylized Lotus Blossom (Linework) -->
+  <g stroke="url(#goldStroke3)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center Petal -->
+    <path d="M 400 135 C 385 175 385 220 400 250 C 415 220 415 175 400 135 Z" stroke-width="2"/>
+    <circle cx="400" cy="180" r="3" fill="#F4E4A6" stroke="none"/>
+
+    <!-- Inner Left Petal -->
+    <path d="M 400 250 C 370 230 350 185 365 155 C 385 190 395 225 400 250" stroke-width="1.8"/>
+    <!-- Inner Right Petal -->
+    <path d="M 400 250 C 430 230 450 185 435 155 C 415 190 405 225 400 250" stroke-width="1.8"/>
+
+    <!-- Outer Left Petal -->
+    <path d="M 400 250 C 345 240 315 205 325 180 C 355 210 380 235 400 250" stroke-width="1.5"/>
+    <!-- Outer Right Petal -->
+    <path d="M 400 250 C 455 240 485 205 475 180 C 445 210 420 235 400 250" stroke-width="1.5"/>
+
+    <!-- Base Pod / Calyx -->
+    <path d="M 360 260 Q 400 280 440 260" stroke-width="2"/>
+    <path d="M 375 272 Q 400 288 425 272" stroke-width="1.5"/>
+  </g>
+
+  <!-- Cradle Star Points -->
+  <g fill="#F4E4A6">
+    <circle cx="400" cy="115" r="3"/>
+    <circle cx="365" cy="140" r="2"/>
+    <circle cx="435" cy="140" r="2"/>
+    <circle cx="280" cy="210" r="1.5" opacity="0.6"/>
+    <circle cx="520" cy="240" r="1.5" opacity="0.6"/>
+  </g>
+
+  <text x="400" y="340" font-family="serif" font-size="13" font-weight="600" fill="#D4AF37" text-anchor="middle" letter-spacing="4" opacity="0.75">
+    TỬ TỨC GIA ĐẠO
+  </text>
+</svg>
