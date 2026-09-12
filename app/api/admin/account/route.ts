@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
 import { verifyAdminSession, getAdminCredentials, updateAdminCredentials } from "@/lib/admin-auth"
 
 export async function GET() {
@@ -7,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const credentials = getAdminCredentials()
+  const credentials = await getAdminCredentials()
   return NextResponse.json({ username: credentials.username })
 }
 
@@ -27,10 +28,14 @@ export async function PUT(request: Request) {
       )
     }
 
-    const currentCreds = getAdminCredentials()
+    const currentCreds = await getAdminCredentials()
 
-    // Validate current password
-    if (currentPassword !== currentCreds.password) {
+    // Validate current password (bcrypt hoặc plaintext fallback)
+    const isCurrentValid =
+      bcrypt.compareSync(currentPassword, currentCreds.password) ||
+      currentPassword === currentCreds.password
+
+    if (!isCurrentValid) {
       return NextResponse.json(
         { error: "Mật khẩu hiện tại không chính xác" },
         { status: 400 }
@@ -38,9 +43,9 @@ export async function PUT(request: Request) {
     }
 
     // Determine password to save: if newPassword provided, use it; otherwise keep current
-    const finalPassword = newPassword ? newPassword : currentCreds.password
+    const finalPassword = newPassword ? newPassword : currentPassword
 
-    const ok = updateAdminCredentials(newUsername.trim(), finalPassword)
+    const ok = await updateAdminCredentials(newUsername.trim(), finalPassword)
     if (ok) {
       return NextResponse.json({
         success: true,

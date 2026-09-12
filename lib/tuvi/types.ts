@@ -50,6 +50,7 @@ export interface Cung {
 export interface LaSoTuVi {
   input: TraCuuInput;
   lunarDate: { ngay: number; thang: number; nam: number; nhuan: boolean };
+  solarDate?: { ngay: number; thang: number; nam: number };
   canChi: CanChi;
   cungMenh: string;
   cungThan: string;

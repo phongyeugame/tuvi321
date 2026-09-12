@@ -9,8 +9,8 @@ export const metadata = {
   description: "Tìm hiểu chi tiết về 14 chính tinh và hệ thống phụ tinh trong Tử Vi Đẩu Số.",
 }
 
-export default function SaoPage() {
-  const posts = getAllPosts("sao")
+export default async function SaoPage() {
+  const posts = await getAllPosts("sao")
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">

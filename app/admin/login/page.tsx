@@ -28,6 +28,9 @@ export default function AdminLoginPage() {
       const data = await res.json()
 
       if (res.ok && data.success) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("admin_active_session", "true")
+        }
         router.push("/admin")
         router.refresh()
       } else {

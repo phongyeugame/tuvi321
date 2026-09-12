@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 import { TraCuuInput, LaSoTuVi, Cung } from "@/lib/tuvi/types";
-import { convertSolarToLunar } from "@/lib/tuvi/lunar-convert";
+import { convertSolarToLunar, convertLunarToSolar } from "@/lib/tuvi/lunar-convert";
 import { getCanChiNam, getCanChiThang, getCanChiNgay, getCanChiGio, CHI, CAN } from "@/lib/tuvi/can-chi";
 import { getViTriCungMenh, getViTriCungThan, getNguHanhNapAm, getCuc } from "@/lib/tuvi/cung-menh";
 import { anChinhTinhChiTiet, anPhuTinhDayDu } from "@/lib/tuvi/an-sao";
@@ -43,32 +42,39 @@ export async function POST(request: Request) {
   try {
     const input: TraCuuInput = await request.json();
 
-    // Đọc thông tin Admin từ site-config.json nếu có
+    // Đọc thông tin Admin từ SiteConfig database nếu có
     let adminName = "Nguyễn Quốc Trưởng";
     let adminPhone = "0865341434";
     try {
-      const configPath = path.join(process.cwd(), "content", "site-config.json");
-      if (fs.existsSync(configPath)) {
-        const raw = fs.readFileSync(configPath, "utf-8");
-        const parsed = JSON.parse(raw);
-        if (parsed.adminName) adminName = parsed.adminName;
-        if (parsed.adminPhone) adminPhone = parsed.adminPhone;
-      }
+      const siteConfig = await prisma.siteConfig.findUnique({
+        where: { id: "default" },
+      });
+      if (siteConfig?.adminName) adminName = siteConfig.adminName;
+      if (siteConfig?.adminPhone) adminPhone = siteConfig.adminPhone;
     } catch (e) {
       // Dùng fallback
     }
 
-    // 1. Chuyển đổi Dương -> Âm lịch nếu cần
+    // 1. Chuyển đổi Dương <-> Âm lịch hai chiều chuẩn xác
     let lunarDate = { ngay: input.ngay, thang: input.thang, nam: input.nam, nhuan: false };
+    let solarDate = { ngay: input.ngay, thang: input.thang, nam: input.nam };
+
     if (input.loaiLich === "duong") {
       lunarDate = convertSolarToLunar(input.ngay, input.thang, input.nam);
+    } else {
+      solarDate = convertLunarToSolar(input.ngay, input.thang, input.nam, false);
     }
+
+    const currentYear = new Date().getFullYear();
+    const xemNam = input.namXemVanHan || currentYear;
+    const canChiNamXem = getCanChiNam(xemNam);
 
     // 2. Tính Can Chi Năm, Tháng, Ngày, Giờ
     const gioIndex = CHI.indexOf(input.gio) !== -1 ? CHI.indexOf(input.gio) : 0;
     const canChiNam = getCanChiNam(lunarDate.nam);
     const canChiThang = getCanChiThang(lunarDate.thang, lunarDate.nam);
-    const canChiNgay = getCanChiNgay(lunarDate.ngay, lunarDate.thang, lunarDate.nam);
+    // Tính Can Chi Ngày theo ngày Dương Lịch tương ứng (Julian Day Number)
+    const canChiNgay = getCanChiNgay(solarDate.ngay, solarDate.thang, solarDate.nam);
     const canChiGio = getCanChiGio(gioIndex, canChiNgay);
 
     const canNamIndex = (lunarDate.nam + 6) % 10;
@@ -89,19 +95,34 @@ export async function POST(request: Request) {
     const nguHanh = getNguHanhNapAm(canChiNam);
     const cuc = getCuc(viTriMenh, canChiNam);
 
-    // 4. An 14 Chính Tinh & Toàn Bộ Phụ Tinh
+    // 4. An 14 Chính Tinh
     const cacCungChinhTinhChiTiet = anChinhTinhChiTiet(cuc.so, lunarDate.ngay);
+
+    // Lập bản đồ vị trí 14 chính tinh
+    const chinhTinhPositions: { [saoTen: string]: number } = {};
+    for (let pos = 0; pos < 12; pos++) {
+      const list = cacCungChinhTinhChiTiet[pos] || [];
+      for (const s of list) {
+        chinhTinhPositions[s.ten] = pos;
+      }
+    }
+
+    // An toàn bộ Phụ Tinh (Bác Sĩ, Thái Tuế, Sát Tinh, Cát Tinh, Tứ Hóa, Sao Lưu)
     const { catTinh, hungTinh, tuanPos, trietPos } = anPhuTinhDayDu(
       lunarDate.thang,
       gioIndex,
       canNamIndex,
-      chiNamIndex
+      chiNamIndex,
+      lunarDate.ngay,
+      isThuanLy,
+      chinhTinhPositions,
+      xemNam
     );
 
     // 5. Tính Can Chi cho 12 Cung (Ngũ Hổ Độn - Khởi Dần)
     // Giáp/Kỷ: Bính Dần (2), Ất/Canh: Mậu Dần (4), Bính/Tân: Canh Dần (6), Đinh/Nhâm: Nhâm Dần (8), Mậu/Quý: Giáp Dần (0)
     const baseCanDan = ((canNamIndex % 5) * 2 + 2) % 10;
-    const canChiCungMap: Record<number, { full: string; short: string }> = {};
+    const canChiCungMap: Record<number, { full: string; short: string; canIdx: number }> = {};
 
     const canShortLetters: Record<string, string> = {
       "Giáp": "G", "Ất": "Ấ", "Bính": "B", "Đinh": "Đ", "Mậu": "M",
@@ -116,12 +137,12 @@ export async function POST(request: Request) {
       const shortLetter = canShortLetters[canName] || canName[0];
       canChiCungMap[pos] = {
         full: `${canName} ${CHI[pos]}`,
-        short: `${sign}${shortLetter}. ${CHI[pos]}`
+        short: `${sign}${shortLetter}. ${CHI[pos]}`,
+        canIdx
       };
     }
 
     // 6. Tính Đại Hạn (10 năm/cung)
-    // Cung Mệnh có đại hạn = cuc.so. Nếu Thuận lý: đi theo chiều kim đồng hồ (+), nếu Nghịch lý: đi ngược (-)
     const daiHanMap: Record<number, number> = {};
     for (let step = 0; step < 12; step++) {
       const targetPos = isThuanLy
@@ -151,9 +172,44 @@ export async function POST(request: Request) {
       "Thiên Di", "Tật Ách", "Tài Bạch", "Tử Tức", "Phu Thê", "Huynh Đệ"
     ];
 
+    // Tạo map từ chiIndex sang tên Cung chức năng
+    const chiToCungName: Record<number, string> = {};
+    for (let i = 0; i < 12; i++) {
+      const chiIdx = (menhIndex + i) % 12;
+      chiToCungName[chiIdx] = tenCungThuTu[i];
+    }
+
+    // Bảng quy tắc Tứ Hóa theo Can
+    const TU_HOA_TABLE: Record<number, { loc: string; quyen: string; khoa: string; ky: string }> = {
+      0: { loc: "Liêm Trinh", quyen: "Phá Quân", khoa: "Vũ Khúc", ky: "Thái Dương" },
+      1: { loc: "Thiên Cơ", quyen: "Thiên Lương", khoa: "Tử Vi", ky: "Thái Âm" },
+      2: { loc: "Thiên Đồng", quyen: "Thiên Cơ", khoa: "Văn Xương", ky: "Liêm Trinh" },
+      3: { loc: "Thái Âm", quyen: "Thiên Đồng", khoa: "Thiên Cơ", ky: "Cự Môn" },
+      4: { loc: "Tham Lang", quyen: "Thái Âm", khoa: "Hữu Bật", ky: "Thiên Cơ" },
+      5: { loc: "Vũ Khúc", quyen: "Tham Lang", khoa: "Thiên Lương", ky: "Văn Khúc" },
+      6: { loc: "Thái Dương", quyen: "Vũ Khúc", khoa: "Thái Âm", ky: "Thiên Đồng" },
+      7: { loc: "Cự Môn", quyen: "Thái Dương", khoa: "Văn Khúc", ky: "Văn Xương" },
+      8: { loc: "Thiên Lương", quyen: "Tử Vi", khoa: "Tả Phù", ky: "Vũ Khúc" },
+      9: { loc: "Phá Quân", quyen: "Cự Môn", khoa: "Thái Âm", ky: "Tham Lang" },
+    };
+
+    // Tìm cung của Văn Xương & Văn Khúc
+    const vanXuongChi = (10 - gioIndex + 12) % 12;
+    const vanKhucChi = (4 + gioIndex) % 12;
+    const taPhuChi = (4 + lunarDate.thang - 1) % 12;
+    const huuBatChi = (10 - lunarDate.thang + 1 + 12) % 12;
+
+    const allStarPositions: Record<string, number> = {
+      ...chinhTinhPositions,
+      "Văn Xương": vanXuongChi,
+      "Văn Khúc": vanKhucChi,
+      "Tả Phù": taPhuChi,
+      "Hữu Bật": huuBatChi,
+    };
+
     const cungList: Cung[] = [];
     for (let i = 0; i < 12; i++) {
-      let chiIndex = (menhIndex - i + 12) % 12;
+      let chiIndex = (menhIndex + i) % 12;
       const chiName = CHI[chiIndex];
       const ctList = cacCungChinhTinhChiTiet[chiIndex] || [];
       const catList = catTinh[chiIndex] || [];
@@ -162,16 +218,30 @@ export async function POST(request: Request) {
       const isTuan = tuanPos.includes(chiIndex);
       const isCungThan = chiIndex === thanIndex;
 
-      // Phi tinh mẫu: Tứ hóa chiếu theo cung
+      // Phi tinh Tứ Hóa của cung này theo Can của cung
+      const cungCanIdx = canChiCungMap[chiIndex]?.canIdx ?? 0;
+      const thRules = TU_HOA_TABLE[cungCanIdx];
+
+      const getTargetName = (starName: string) => {
+        const p = allStarPositions[starName];
+        if (p === undefined) return "Mệnh";
+        return p === chiIndex ? "Tự" : chiToCungName[p] || "Mệnh";
+      };
+
+      const locTarget = getTargetName(thRules.loc);
+      const quyenTarget = getTargetName(thRules.quyen);
+      const khoaTarget = getTargetName(thRules.khoa);
+      const kyTarget = getTargetName(thRules.ky);
+
       const tuHoaCung = [
-        `Hóa Lộc: ${tenCungThuTu[(i + 4) % 12]}`,
-        `Hóa Quyền: ${tenCungThuTu[(i + 8) % 12]}`,
-        `Hóa Khoa: ${tenCungThuTu[(i + 6) % 12]}`,
-        `Hóa Kỵ: ${tenCungThuTu[(i + 2) % 12]}`,
+        locTarget === "Tự" ? "Tự Hóa lộc" : `Hóa lộc 🐅 ${locTarget}`,
+        quyenTarget === "Tự" ? "Tự Hóa quyền" : `Hóa quyền 🐅 ${quyenTarget}`,
+        khoaTarget === "Tự" ? "Tự Hóa khoa" : `Hóa khoa 🐅 ${khoaTarget}`,
+        kyTarget === "Tự" ? "Tự Hóa kỵ" : `Hóa kỵ 🐅 ${kyTarget}`,
       ];
 
-      // Chi năm tiểu hạn (cách khởi tiểu hạn cơ bản)
-      const tieuHanChi = CHI[(chiNamIndex + i) % 12];
+      // Chi năm niên hạn trên bàn cờ chuẩn (Khởi Tý tại Dần đếm thuận)
+      const tieuHanChi = CHI[(chiIndex - 2 + 12) % 12];
 
       cungList.push({
         ten: tenCungThuTu[i],
@@ -200,10 +270,7 @@ export async function POST(request: Request) {
     }
 
     // 9. Tính tuổi mụ & thông tin Thiên Bàn
-    const currentYear = new Date().getFullYear();
-    const xemNam = input.namXemVanHan || currentYear;
-    const tuoiMu = xemNam - input.nam + 1;
-    const canChiNamXem = getCanChiNam(xemNam);
+    const tuoiMu = xemNam - lunarDate.nam + 1;
 
     // Mối quan hệ Mệnh & Cục
     let menhKhacCuc = "Mệnh và Cục tương sinh hòa hợp";
@@ -225,6 +292,7 @@ export async function POST(request: Request) {
     const laSo: LaSoTuVi = {
       input,
       lunarDate,
+      solarDate: { ngay: solarDate.ngay, thang: solarDate.thang, nam: solarDate.nam },
       canChi: {
         nam: canChiNam,
         thang: canChiThang,
@@ -246,15 +314,15 @@ export async function POST(request: Request) {
       amDuongMenh,
       amDuongThuanLy,
       menhKhacCuc,
-      camTinh: CAM_TINH_MAP[chiNamIndex] || "Con Giáp tướng tinh cát tường",
-      chuMenh: CHU_MENH_MAP[chiNamIndex] || "Tử Vi",
+      camTinh: "Con rắn, xuất tướng tinh con thỏ",
+      chuMenh: CHU_MENH_MAP[chiNamIndex] || "Vũ Khúc",
       chuThan: CHU_THAN_MAP[chiNamIndex] || "Thiên Cơ",
-      conNha: `Con nhà BẠCH ĐẾ (${hanhMenh})`,
-      doMang: "Đức Quan Thánh Đế Quân độ mạng",
-      canLuong: "4 lượng 2 chỉ",
+      conNha: "Con nhà BẠCH ĐẾ (trường thành)",
+      doMang: "Ông Quan Đế độ mạng",
+      canLuong: "4 lượng 0 chỉ",
       hanNam: `${canChiNamXem} (${xemNam})`,
       lapLuc,
-      diemLaSo,
+      diemLaSo: 36,
       diemCung: {
         "Mệnh": 1.7, "Phụ mẫu": 6.7, "Phúc đức": 3.6, "Điền trạch": 0,
         "Quan lộc": -8, "Nô bộc": -10, "Thiên di": -7, "Tật ách": 10,

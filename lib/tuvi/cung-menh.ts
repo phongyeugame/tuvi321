@@ -54,30 +54,24 @@ export function getNguHanhNapAm(canChiNam: string): string {
 export function getCuc(viTriMenh: string, canNam: string): { ten: string; so: number } {
   const can = canNam.split(" ")[0];
   const CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
-  const canIndex = CAN.indexOf(can);
-  
-  let valCan = 0;
-  if (canIndex === 0 || canIndex === 5) valCan = 1; // Giáp, Kỷ
-  else if (canIndex === 1 || canIndex === 6) valCan = 2; // Ất, Canh
-  else if (canIndex === 2 || canIndex === 7) valCan = 3; // Bính, Tân
-  else if (canIndex === 3 || canIndex === 8) valCan = 4; // Đinh, Nhâm
-  else if (canIndex === 4 || canIndex === 9) valCan = 5; // Mậu, Quý
+  const canIndex = CAN.indexOf(can) !== -1 ? CAN.indexOf(can) : 0;
 
-  const chiIndex = CHI.indexOf(viTriMenh);
-  let valChi = 0;
-  if ([0,1,6,7].includes(chiIndex)) valChi = 1; // Tý Sửu Ngọ Mùi
-  else if ([2,3,8,9].includes(chiIndex)) valChi = 2; // Dần Mão Thân Dậu
-  else if ([4,5,10,11].includes(chiIndex)) valChi = 3; // Thìn Tỵ Tuất Hợi
+  // Ngũ Hổ Độn: Khởi Can Dần theo Can Năm
+  // Giáp/Kỷ khởi Bính Dần (2), Ất/Canh khởi Mậu Dần (4), Bính/Tân khởi Canh Dần (6), Đinh/Nhâm khởi Nhâm Dần (8), Mậu/Quý khởi Giáp Dần (0)
+  const baseCanDan = ((canIndex % 5) * 2 + 2) % 10;
 
-  let cucVal = valCan + valChi;
-  if (cucVal > 5) cucVal -= 5;
+  const chiIndex = CHI.indexOf(viTriMenh) !== -1 ? CHI.indexOf(viTriMenh) : 2;
+  const stepsFromDan = (chiIndex - 2 + 12) % 12;
+  const canMenhIndex = (baseCanDan + stepsFromDan) % 10;
 
-  switch (cucVal) {
-    case 1: return { ten: "Kim Tứ Cục", so: 4 };
-    case 2: return { ten: "Thuỷ Nhị Cục", so: 2 };
-    case 3: return { ten: "Hoả Lục Cục", so: 6 };
-    case 4: return { ten: "Thổ Ngũ Cục", so: 5 };
-    case 5: return { ten: "Mộc Tam Cục", so: 3 };
-    default: return { ten: "Mộc Tam Cục", so: 3 };
-  }
+  const canChiMenh = `${CAN[canMenhIndex]} ${viTriMenh}`;
+  const napAm = NAP_AM_60[canChiMenh] || "Bình Địa Mộc";
+
+  if (napAm.includes("Thủy")) return { ten: "Thuỷ Nhị Cục", so: 2 };
+  if (napAm.includes("Mộc")) return { ten: "Mộc Tam Cục", so: 3 };
+  if (napAm.includes("Kim")) return { ten: "Kim Tứ Cục", so: 4 };
+  if (napAm.includes("Thổ")) return { ten: "Thổ Ngũ Cục", so: 5 };
+  if (napAm.includes("Hỏa")) return { ten: "Hoả Lục Cục", so: 6 };
+
+  return { ten: "Mộc Tam Cục", so: 3 };
 }

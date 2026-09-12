@@ -1,0 +1,49 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // Lưu mật khẩu đã hash bcryptjs
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id          String   @id @default(uuid())
+  folder      String   // "sao" | "cung-chuc" | "thu-kho"
+  slug        String
+  title       String
+  excerpt     String?  @db.Text
+  content     String   @db.Text
+  category    String?
+  image       String?
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([folder, slug])
+  @@index([folder])
+}
+
+model SiteConfig {
+  id               String   @id @default("default")
+  siteName         String   @default("Tra Cứu Tử Vi")
+  siteSlogan       String   @default("Giải Mã Lá Số Tử Vi Của Riêng Bạn")
+  siteDescription  String   @default("Website tra cứu tử vi trực tuyến miễn phí, an sao chính xác tuyệt đối. Luận giải chi tiết 12 cung bản mệnh, vận hạn cuộc đời.") @db.Text
+  adminName        String   @default("Nguyễn Quốc Trưởng")
+  adminPhone       String   @default("0865341434")
+  hotline          String   @default("0865.341.434")
+  zalo             String   @default("0865341434")
+  email            String   @default("contact@tuvi.vn")
+  announcement     String   @default("Chào mừng bạn đến với hệ thống Tra Cứu Tử Vi Đẩu Số") @db.Text
+  showAnnouncement Boolean  @default(true)
+  footerNote       String   @default("Tử Vi Đẩu Số là tinh hoa cổ học phương Đông giúp định hướng và hoàn thiện bản thân.") @db.Text
+  updatedAt        DateTime @updatedAt
+}

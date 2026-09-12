@@ -9,8 +9,8 @@ export const metadata = {
   description: "Tổng hợp các bài viết chuyên sâu về Tử Vi Đẩu Số, Phong Thủy và Cổ Học Đông Phương.",
 }
 
-export default function ThuKhoPage() {
-  const posts = getAllPosts("thu-kho")
+export default async function ThuKhoPage() {
+  const posts = await getAllPosts("thu-kho")
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">

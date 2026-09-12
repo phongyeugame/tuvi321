@@ -4,7 +4,7 @@ import { MDXRemote } from "next-mdx-remote/rsc"
 import { notFound } from "next/navigation"
 
 export async function generateStaticParams() {
-  const posts = getAllPosts("sao")
+  const posts = await getAllPosts("sao")
   return posts.map((post) => ({
     slug: post.slug,
   }))
@@ -13,7 +13,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   try {
-    const post = getPostBySlug(resolvedParams.slug, "sao")
+    const post = await getPostBySlug(resolvedParams.slug, "sao")
     return {
       title: `${post.meta.title} | Tra Cứu Tử Vi`,
       description: post.meta.excerpt,
@@ -27,7 +27,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const resolvedParams = await params;
   let post;
   try {
-    post = getPostBySlug(resolvedParams.slug, "sao")
+    post = await getPostBySlug(resolvedParams.slug, "sao")
   } catch (error) {
     notFound()
   }

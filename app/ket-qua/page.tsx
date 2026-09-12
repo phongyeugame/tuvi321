@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { LaSoTuVi } from "@/lib/tuvi/types"
 import { LaSoWheel } from "@/components/tra-cuu/LaSoWheel"
 import { LaSoTraditional } from "@/components/tra-cuu/LaSoTraditional"
+import { TuViChartViewer, adaptLaSoTuViToChartData } from "@/components/tuvi-chart"
 import { ScrollReveal } from "@/components/ui/ScrollReveal"
 import { Button } from "@/components/ui/Button"
 import { Download, Share2 } from "lucide-react"
@@ -14,7 +15,7 @@ function KetQuaContent() {
   const [data, setData] = useState<LaSoTuVi | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [viewMode, setViewMode] = useState<"traditional" | "wheel">("traditional")
+  const [viewMode, setViewMode] = useState<"svg" | "traditional" | "wheel">("svg")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,6 +102,17 @@ function KetQuaContent() {
             <div className="inline-flex rounded-xl bg-secondary/80 p-1 border border-border">
               <button
                 type="button"
+                onClick={() => setViewMode("svg")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  viewMode === "svg"
+                    ? "bg-gold text-black shadow-md shadow-gold/20"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                Lá Số SVG Chuẩn
+              </button>
+              <button
+                type="button"
                 onClick={() => setViewMode("traditional")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMode === "traditional"
@@ -108,7 +120,7 @@ function KetQuaContent() {
                     : "text-muted hover:text-foreground"
                 }`}
               >
-                Bàn Cờ 4x4 Chuẩn
+                Bàn Cờ HTML
               </button>
               <button
                 type="button"
@@ -140,7 +152,9 @@ function KetQuaContent() {
       {/* Main Lá Số Display */}
       <ScrollReveal delay={0.1}>
         <div className="mb-10">
-          {viewMode === "traditional" ? (
+          {viewMode === "svg" ? (
+            <TuViChartViewer chart={adaptLaSoTuViToChartData(data)} onBack={() => window.history.back()} />
+          ) : viewMode === "traditional" ? (
             <LaSoTraditional data={data} />
           ) : (
             <div className="glass p-6 md:p-8 rounded-3xl">

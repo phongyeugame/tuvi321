@@ -32,14 +32,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const checkAuth = async () => {
       try {
+        const hasSession =
+          typeof window !== "undefined" &&
+          sessionStorage.getItem("admin_active_session") === "true"
+
+        if (!hasSession) {
+          // Thoát trang web (đóng tab/trình duyệt hoặc mở tab mới) => bắt buộc đăng nhập lại
+          await fetch("/api/admin/auth", { method: "DELETE" })
+          setIsAuthenticated(false)
+          router.push("/admin/login")
+          return
+        }
+
         const res = await fetch("/api/admin/auth")
         const data = await res.json()
         if (data.authenticated) {
           setIsAuthenticated(true)
         } else {
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("admin_active_session")
+          }
+          setIsAuthenticated(false)
           router.push("/admin/login")
         }
       } catch (err) {
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("admin_active_session")
+        }
+        setIsAuthenticated(false)
         router.push("/admin/login")
       } finally {
         setCheckingAuth(false)
@@ -50,6 +70,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname, isLoginPage, router])
 
   const handleLogout = async () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("admin_active_session")
+    }
     await fetch("/api/admin/auth", { method: "DELETE" })
     router.push("/admin/login")
     router.refresh()

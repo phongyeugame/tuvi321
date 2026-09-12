@@ -9,8 +9,8 @@ export const metadata = {
   description: "Tìm hiểu chi tiết về ý nghĩa các cung chức trong lá số Tử Vi.",
 }
 
-export default function CungChucPage() {
-  const posts = getAllPosts("cung-chuc")
+export default async function CungChucPage() {
+  const posts = await getAllPosts("cung-chuc")
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">

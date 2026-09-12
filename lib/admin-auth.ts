@@ -1,35 +1,59 @@
 import { cookies } from "next/headers"
-import fs from "fs"
-import path from "path"
+import bcrypt from "bcryptjs"
+import { prisma } from "@/lib/prisma"
 
 export const ADMIN_TOKEN_SECRET = "tuvi-secret-admin-session-token-2026"
-const authFilePath = path.join(process.cwd(), "content", "admin-auth.json")
 
-export function getAdminCredentials() {
+export async function getAdminCredentials() {
   try {
-    if (fs.existsSync(authFilePath)) {
-      const data = fs.readFileSync(authFilePath, "utf-8")
-      return JSON.parse(data)
+    const admin = await prisma.admin.findFirst({
+      orderBy: { createdAt: "asc" },
+    })
+    if (admin) {
+      return {
+        id: admin.id,
+        username: admin.username,
+        password: admin.password,
+      }
     }
   } catch (error) {
-    console.error("Error reading admin credentials:", error)
+    console.error("Error reading admin from database:", error)
   }
+
+  // Fallback nếu database chưa có hoặc đang khởi tạo
   return {
+    id: "default",
     username: process.env.ADMIN_USERNAME || "admin123",
     password: process.env.ADMIN_PASSWORD || "admin123@",
   }
 }
 
-export function updateAdminCredentials(username: string, password: string) {
+export async function updateAdminCredentials(username: string, password: string): Promise<boolean> {
   try {
-    const dir = path.dirname(authFilePath)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
+    const hashedPassword = bcrypt.hashSync(password, 10)
+    const existing = await prisma.admin.findFirst({
+      orderBy: { createdAt: "asc" },
+    })
+
+    if (existing) {
+      await prisma.admin.update({
+        where: { id: existing.id },
+        data: {
+          username,
+          password: hashedPassword,
+        },
+      })
+    } else {
+      await prisma.admin.create({
+        data: {
+          username,
+          password: hashedPassword,
+        },
+      })
     }
-    fs.writeFileSync(authFilePath, JSON.stringify({ username, password }, null, 2), "utf-8")
     return true
   } catch (error) {
-    console.error("Error updating admin credentials:", error)
+    console.error("Error updating admin credentials in database:", error)
     return false
   }
 }

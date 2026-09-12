@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import bcrypt from "bcryptjs"
 import { getAdminCredentials, ADMIN_TOKEN_SECRET, verifyAdminSession } from "@/lib/admin-auth"
 
 export async function GET() {
@@ -10,16 +11,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { username, password } = await request.json()
-    const credentials = getAdminCredentials()
+    const credentials = await getAdminCredentials()
 
-    if (username === credentials.username && password === credentials.password) {
+    const isValidPassword =
+      bcrypt.compareSync(password, credentials.password) ||
+      password === credentials.password
+
+    if (username === credentials.username && isValidPassword) {
       const cookieStore = await cookies()
       cookieStore.set("admin_session", ADMIN_TOKEN_SECRET, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
       })
 
       return NextResponse.json({ success: true, message: "Đăng nhập thành công" })
