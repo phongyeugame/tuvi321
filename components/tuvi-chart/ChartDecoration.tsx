@@ -42,28 +42,28 @@ export function ChartDecoration({ chart }: ChartDecorationProps) {
 
         return (
           <g key={line.id} className="connection-line-group">
-            {/* Đường nền mờ tăng độ tương phản và độ nổi bật ngay cả khi thu nhỏ */}
+            {/* Đường nền mờ dịu mắt, hòa nhã */}
             <line
               x1={line.x1}
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
               stroke={strokeColor}
-              strokeWidth={(line.strokeWidth || 2.5) + 2.5}
-              opacity={0.25}
+              strokeWidth={(line.strokeWidth || 1.8) + 1.6}
+              opacity={0.10}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {/* Đường chính nét đứt theo Ngũ Hành rõ nét */}
+            {/* Đường chính nét đứt theo Ngũ Hành với sắc độ dịu nhẹ, thanh thoát */}
             <line
               x1={line.x1}
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
               stroke={strokeColor}
-              strokeWidth={line.strokeWidth || 2.5}
+              strokeWidth={line.strokeWidth || 1.8}
               strokeDasharray={line.dashArray || "8 5"}
-              opacity={line.opacity || 0.9}
+              opacity={line.opacity || 0.55}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -78,17 +78,19 @@ export function ChartDecoration({ chart }: ChartDecorationProps) {
           <circle
             cx={pt.x}
             cy={pt.y}
-            r={3.8}
+            r={3.2}
             fill="#FFFDF9"
             stroke={pt.color}
-            strokeWidth={1.8}
+            strokeWidth={1.4}
+            opacity={0.85}
           />
           {/* Tâm điểm ngọc Ngũ Hành sắc nét */}
           <circle
             cx={pt.x}
             cy={pt.y}
-            r={1.6}
+            r={1.4}
             fill={pt.color}
+            opacity={0.85}
           />
         </g>
       ))}

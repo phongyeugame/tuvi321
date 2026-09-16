@@ -104,27 +104,27 @@ export function ChartCenter({
           const strokeColor = getNguHanhColor(line.nguHanh || line.element);
           return (
             <g key={line.id}>
-              {/* Đường nền mờ tăng tương phản */}
+              {/* Đường nền mờ nhẹ nhàng */}
               <line
                 x1={line.x1}
                 y1={line.y1}
                 x2={line.x2}
                 y2={line.y2}
                 stroke={strokeColor}
-                strokeWidth={(line.strokeWidth || 2) + 2}
-                opacity={0.2}
+                strokeWidth={(line.strokeWidth || 1.2) + 1.2}
+                opacity={0.06}
                 strokeLinecap="round"
               />
-              {/* Đường tia chính nét đứt rõ nét */}
+              {/* Đường tia chính nét mảnh, màu dịu nhẹ */}
               <line
                 x1={line.x1}
                 y1={line.y1}
                 x2={line.x2}
                 y2={line.y2}
                 stroke={strokeColor}
-                strokeWidth={line.strokeWidth || 2}
+                strokeWidth={line.strokeWidth || 1.2}
                 strokeDasharray={line.dashArray || "6 4"}
-                opacity={line.opacity || 0.75}
+                opacity={line.opacity || 0.35}
                 strokeLinecap="round"
               />
             </g>
@@ -283,7 +283,7 @@ export function ChartCenter({
         {/* Dòng 3: Tuổi */}
         <text x={x + 28} y={infoStartY + infoLineHeight * 2} fill="#4b5563">Tuổi:</text>
         <text x={x + width - 28} y={infoStartY + infoLineHeight * 2} textAnchor="end" fill="#111827" fontWeight="600">
-          {user.stemsBranches.year}, 26 tuổi (thời điểm lập lá số)
+          {user.stemsBranches.year}, {user.tuoi ?? 26} tuổi (thời điểm lập lá số)
         </text>
 
         {/* Dòng 4: Ngày Sinh */}

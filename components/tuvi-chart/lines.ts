@@ -193,9 +193,9 @@ export function computeChartLines(
       y1: menhPt.y,
       x2: taiPt.x,
       y2: taiPt.y,
-      strokeWidth: 2.5,
+      strokeWidth: 1.8,
       dashArray: "8 5",
-      opacity: 0.9,
+      opacity: 0.55,
     });
 
     lines.push({
@@ -212,9 +212,9 @@ export function computeChartLines(
       y1: taiPt.y,
       x2: quanPt.x,
       y2: quanPt.y,
-      strokeWidth: 2.5,
+      strokeWidth: 1.8,
       dashArray: "8 5",
-      opacity: 0.9,
+      opacity: 0.55,
     });
 
     lines.push({
@@ -231,9 +231,9 @@ export function computeChartLines(
       y1: quanPt.y,
       x2: menhPt.x,
       y2: menhPt.y,
-      strokeWidth: 2.5,
+      strokeWidth: 1.8,
       dashArray: "8 5",
-      opacity: 0.9,
+      opacity: 0.55,
     });
   }
 
@@ -257,9 +257,9 @@ export function computeChartLines(
       y1: menhPt.y,
       x2: diPt.x,
       y2: diPt.y,
-      strokeWidth: 2.8,
+      strokeWidth: 2.0,
       dashArray: "9 5",
-      opacity: 0.92,
+      opacity: 0.60,
     });
   }
 
@@ -283,9 +283,9 @@ export function computeChartLines(
       y1: menhPt.y,
       x2: thanPt.x,
       y2: thanPt.y,
-      strokeWidth: 2.2,
+      strokeWidth: 1.8,
       dashArray: "7 4",
-      opacity: 0.88,
+      opacity: 0.55,
     });
   }
 
@@ -339,9 +339,9 @@ export function computeCenterRadialLines(
       y1: y,
       x2: x + width,
       y2: y + height,
-      strokeWidth: 2,
+      strokeWidth: 1.2,
       dashArray: "6 4",
-      opacity: 0.75,
+      opacity: 0.35,
     },
     {
       id: "radial-than-dan",
@@ -355,9 +355,9 @@ export function computeCenterRadialLines(
       y1: y,
       x2: x,
       y2: y + height,
-      strokeWidth: 2,
+      strokeWidth: 1.2,
       dashArray: "6 4",
-      opacity: 0.75,
+      opacity: 0.35,
     },
     {
       id: "radial-ngo-ty",
@@ -371,9 +371,9 @@ export function computeCenterRadialLines(
       y1: y,
       x2: centerX,
       y2: y + height,
-      strokeWidth: 2,
+      strokeWidth: 1.2,
       dashArray: "6 4",
-      opacity: 0.75,
+      opacity: 0.35,
     },
     {
       id: "radial-mao-dau",
@@ -387,9 +387,9 @@ export function computeCenterRadialLines(
       y1: centerY,
       x2: x + width,
       y2: centerY,
-      strokeWidth: 2,
+      strokeWidth: 1.2,
       dashArray: "6 4",
-      opacity: 0.75,
+      opacity: 0.35,
     },
     {
       id: "radial-thin-tuat",
@@ -403,9 +403,9 @@ export function computeCenterRadialLines(
       y1: y + height * 0.25,
       x2: x + width,
       y2: y + height * 0.75,
-      strokeWidth: 2,
+      strokeWidth: 1.2,
       dashArray: "6 4",
-      opacity: 0.75,
+      opacity: 0.35,
     },
     {
       id: "radial-suu-mui",
@@ -419,9 +419,9 @@ export function computeCenterRadialLines(
       y1: y,
       x2: x + width * 0.75,
       y2: y + height,
-      strokeWidth: 2,
+      strokeWidth: 1.2,
       dashArray: "6 4",
-      opacity: 0.75,
+      opacity: 0.35,
     },
   ];
 }
@@ -518,9 +518,9 @@ export function computeTraditionalLines(
     y1: menhPt.y,
     x2: diPt.x,
     y2: diPt.y,
-    strokeWidth: 2.5,
+    strokeWidth: 2.0,
     dashArray: "8 5",
-    opacity: 0.92,
+    opacity: 0.60,
   });
 
   // B. Tam Hợp: Mệnh ↔ Tài Bạch (Toàn bộ tam giác mang màu Ngũ Hành Tam Hợp Cục)
@@ -538,9 +538,9 @@ export function computeTraditionalLines(
     y1: menhPt.y,
     x2: taiPt.x,
     y2: taiPt.y,
-    strokeWidth: 2.2,
+    strokeWidth: 1.8,
     dashArray: "7 5",
-    opacity: 0.9,
+    opacity: 0.55,
   });
 
   // C. Tam Hợp: Tài Bạch ↔ Quan Lộc
@@ -558,9 +558,9 @@ export function computeTraditionalLines(
     y1: taiPt.y,
     x2: quanPt.x,
     y2: quanPt.y,
-    strokeWidth: 2.2,
+    strokeWidth: 1.8,
     dashArray: "7 5",
-    opacity: 0.9,
+    opacity: 0.55,
   });
 
   // D. Tam Hợp: Quan Lộc ↔ Mệnh
@@ -578,9 +578,9 @@ export function computeTraditionalLines(
     y1: quanPt.y,
     x2: menhPt.x,
     y2: menhPt.y,
-    strokeWidth: 2.2,
+    strokeWidth: 1.8,
     dashArray: "7 5",
-    opacity: 0.9,
+    opacity: 0.55,
   });
 
   // E. Thân cư (nếu khác Mệnh)
@@ -599,9 +599,9 @@ export function computeTraditionalLines(
       y1: menhPt.y,
       x2: thanPt.x,
       y2: thanPt.y,
-      strokeWidth: 2.0,
+      strokeWidth: 1.8,
       dashArray: "6 4",
-      opacity: 0.88,
+      opacity: 0.55,
     });
   }
 

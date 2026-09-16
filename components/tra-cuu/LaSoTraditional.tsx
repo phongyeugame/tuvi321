@@ -290,28 +290,28 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                   const strokeColor = getNguHanhColor(line.nguHanh || line.element);
                   return (
                     <g key={line.id}>
-                      {/* Đường nền mờ tăng tương phản và độ nổi bật */}
+                      {/* Đường nền mờ dịu nhẹ */}
                       <line
                         x1={line.x1}
                         y1={line.y1}
                         x2={line.x2}
                         y2={line.y2}
                         stroke={strokeColor}
-                        strokeWidth={(line.strokeWidth || 2.2) + 2.5}
-                        opacity={0.25}
+                        strokeWidth={(line.strokeWidth || 1.8) + 1.6}
+                        opacity={0.10}
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
-                      {/* Đường chính nét đứt theo Ngũ Hành rõ nét */}
+                      {/* Đường chính nét đứt theo Ngũ Hành dịu nhẹ thanh thoát */}
                       <line
                         x1={line.x1}
                         y1={line.y1}
                         x2={line.x2}
                         y2={line.y2}
                         stroke={strokeColor}
-                        strokeWidth={line.strokeWidth || 2.2}
+                        strokeWidth={line.strokeWidth || 1.8}
                         strokeDasharray={line.dashArray || "7 5"}
-                        opacity={line.opacity || 0.9}
+                        opacity={line.opacity || 0.55}
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className="animate-dash"
@@ -325,16 +325,18 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                     <circle
                       cx={pt.x}
                       cy={pt.y}
-                      r={3.8}
+                      r={3.2}
                       fill="#f5ecd7"
                       stroke={pt.color}
-                      strokeWidth={1.8}
+                      strokeWidth={1.4}
+                      opacity={0.85}
                     />
                     <circle
                       cx={pt.x}
                       cy={pt.y}
-                      r={1.6}
+                      r={1.4}
                       fill={pt.color}
+                      opacity={0.85}
                     />
                   </g>
                 ))}

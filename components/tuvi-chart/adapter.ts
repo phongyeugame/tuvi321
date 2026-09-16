@@ -113,6 +113,7 @@ export function adaptLaSoTuViToChartData(data: LaSoTuVi): TuViChartData {
         day: data.canChi.ngay,
         hour: data.canChi.gio,
       },
+      tuoi: data.tuoi || ((data.input?.namXemVanHan || new Date().getFullYear()) - (data.lunarDate?.nam || data.solarDate?.nam || data.input?.nam || 1990) + 1),
       cuc: data.cuc || "Mộc tam cục",
       menh: data.nguHanh || "Bạch Lạp Kim (vàng chân đèn)",
       amDuong: data.amDuongMenh ? `${data.amDuongMenh} (${data.amDuongThuanLy || "Âm Dương thuận lý"})` : "Âm Nam (Âm Dương thuận lý)",

@@ -96,7 +96,7 @@ export function CenterInfo({ data, adminName, adminPhone, formattedPhone }: Cent
         <div>
           <span className="text-stone-600">Tuổi: </span>
           <strong className="text-stone-900">
-            {data.canChi.nam}, {data.tuoi || 26} tuổi (thời điểm lập lá số)
+            {data.canChi.nam}, {data.tuoi || ((data.input?.namXemVanHan || new Date().getFullYear()) - (data.lunarDate?.nam || data.input?.nam || 1990) + 1)} tuổi (thời điểm lập lá số)
           </strong>
         </div>
 
