@@ -12,6 +12,8 @@ interface PalaceProps {
   height: number;
   isSelected?: boolean;
   onSelect?: () => void;
+  bgOnly?: boolean;
+  contentOnly?: boolean;
 }
 
 // Icon Con Ngựa Vàng nhỏ cho Tứ Hóa
@@ -34,8 +36,25 @@ export function Palace({
   height,
   isSelected = false,
   onSelect,
+  bgOnly = false,
+  contentOnly = false,
 }: PalaceProps) {
   const isMenh = palace.name === "MỆNH";
+
+  // Nếu chỉ render nền để tối ưu phân lớp Layering (nền -> đường nối -> nội dung)
+  if (bgOnly) {
+    return (
+      <rect
+        key={`bg-${palace.id}`}
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill={palace.pastelBgColor || "#FAF6EE"}
+        fillOpacity={isMenh ? 0.98 : 0.9}
+      />
+    );
+  }
 
   // Tọa độ phần Tứ Hóa (4 hàng xếp dọc phía dưới)
   const phiTinhDividerY = y + height - 100;
@@ -54,15 +73,17 @@ export function Palace({
       className="palace-cell cursor-pointer transition-all duration-200 select-none"
       onClick={onSelect}
     >
-      {/* 1. Nền ô cung (Màu pastel dịu nhẹ theo Địa Chi) */}
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        fill={palace.pastelBgColor || "#FAF6EE"}
-        fillOpacity={isMenh ? 0.98 : 0.9}
-      />
+      {/* 1. Nền ô cung (Màu pastel dịu nhẹ theo Địa Chi - bỏ qua nếu contentOnly vì đã render ở background-layer) */}
+      {!contentOnly && (
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={palace.pastelBgColor || "#FAF6EE"}
+          fillOpacity={isMenh ? 0.98 : 0.9}
+        />
+      )}
 
       {/* 2. Đường viền nét đứt màu nâu đỏ ngăn cách các cung */}
       <rect
@@ -88,7 +109,7 @@ export function Palace({
       >
         <ZodiacIllustration
           chi={palace.branch}
-          opacity={0.28}
+          opacity={0.38}
         />
       </svg>
 

@@ -42,6 +42,7 @@ export interface PalaceData {
   lifeStage?: string; // Tràng sinh: Trường sinh, Đế vượng, Mộ...
   annualStemBranch?: string; // Năm Tý, Năm Mão...
   monthNumber?: number; // Tháng 1, 2...
+  isMenh?: boolean;
   isThan?: boolean;
   triet?: boolean;
   tuan?: boolean;
@@ -79,9 +80,29 @@ export interface UserChartInfo {
   matrixScores?: { [key: string]: number | string };
 }
 
+export interface ChartLineItem {
+  id: string;
+  source: string;
+  target: string;
+  from?: string;
+  to?: string;
+  name: string;
+  type: "tam-hop" | "xung-chieu" | "than-cu" | "radial" | "cuc";
+  nguHanh: NguHanh;
+  element?: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  strokeWidth?: number;
+  dashArray?: string;
+  opacity?: number;
+}
+
 export interface TuViChartData {
   user: UserChartInfo;
   palaces: PalaceData[];
+  lines?: ChartLineItem[];
   metadata?: {
     title?: string;
     subtitle?: string;
@@ -92,21 +113,23 @@ export interface TuViChartData {
   };
 }
 
+import { NGU_HANH_COLORS } from "./constants";
+
 // Bảng màu chuẩn mực centralized cho các loại sao theo đúng nguyên tắc phong thủy & cổ điển
 export const STAR_COLORS = {
   // Chính tinh phân theo Ngũ Hành hoặc Đỏ truyền thống
   major: {
-    red: "#c92a2a", // Hỏa
-    blue: "#1864ab", // Thủy
-    green: "#2b8a3e", // Mộc
-    gold: "#d97706", // Thổ
-    slate: "#343a40", // Kim
-    default: "#c92a2a",
+    red: NGU_HANH_COLORS.hoa, // Hỏa
+    blue: NGU_HANH_COLORS.thuy, // Thủy
+    green: NGU_HANH_COLORS.moc, // Mộc
+    gold: NGU_HANH_COLORS.tho, // Thổ
+    slate: NGU_HANH_COLORS.kim, // Kim
+    default: NGU_HANH_COLORS.hoa,
   },
-  auspicious: "#15803d", // Cát tinh: Xanh lá cây
-  inauspicious: "#b91c1c", // Sát/Hung tinh: Đỏ đậm
-  supporting: "#1e293b", // Sao phụ thông thường: Đen/xám đen
-  transformation: "#0284c7", // Tứ hóa: Xanh ngọc/lam
-  annual: "#991b1b", // Sao lưu: Đỏ sẫm
-  neutral: "#475569", // Sao khác: Xám
+  auspicious: NGU_HANH_COLORS.moc, // Cát tinh: Mộc / Xanh lá
+  inauspicious: NGU_HANH_COLORS.hoa, // Sát/Hung tinh: Hỏa / Đỏ
+  supporting: NGU_HANH_COLORS.kim, // Sao phụ: Kim / Xám kim loại
+  transformation: NGU_HANH_COLORS.thuy, // Tứ hóa: Thủy / Xanh lam
+  annual: NGU_HANH_COLORS.hoa, // Sao lưu: Đỏ
+  neutral: NGU_HANH_COLORS.kim, // Sao khác: Xám kim loại
 } as const;

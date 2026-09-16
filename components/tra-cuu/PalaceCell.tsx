@@ -44,30 +44,30 @@ interface PalaceCellProps {
   isMobileList?: boolean
 }
 
-// Màu tag can chi góc trên trái chuẩn theo ảnh mẫu
+import { NGU_HANH_COLORS, getStarNguHanh } from "@/components/tuvi-chart/constants"
+
+// Màu tag can chi góc trên trái chuẩn theo Ngũ Hành
 function getChiTagStyle(chi: string) {
   switch (chi) {
     case "Tỵ":
-      return "bg-[#c94a5a] text-white" // Hồng đỏ
     case "Ngọ":
-      return "bg-[#d9534f] text-white" // Đỏ Hỏa
+      return "bg-[#DC2626] text-white" // Đỏ Hỏa
     case "Mùi":
     case "Thìn":
     case "Tuất":
     case "Sửu":
-      return "bg-[#e08e0b] text-white" // Vàng Thổ
+      return "bg-[#B45309] text-white" // Vàng Thổ
     case "Thân":
     case "Dậu":
-      return "bg-[#6c757d] text-white" // Xám Kim
+      return "bg-[#475569] text-white" // Xám Kim
     case "Hợi":
-      return "bg-[#1f4068] text-white" // Xanh đậm Thủy
     case "Tý":
-      return "bg-[#0d6efd] text-white" // Xanh dương Thủy
+      return "bg-[#0284C7] text-white" // Xanh dương Thủy
     case "Dần":
     case "Mão":
-      return "bg-[#28a745] text-white" // Xanh lá Mộc
+      return "bg-[#15803D] text-white" // Xanh lá Mộc
     default:
-      return "bg-[#6c757d] text-white"
+      return "bg-[#475569] text-white"
   }
 }
 
@@ -75,34 +75,35 @@ function getChiTagStyle(chi: string) {
 function getChinhTinhStyle(nguHanh: "Kim" | "Mộc" | "Thủy" | "Hỏa" | "Thổ") {
   switch (nguHanh) {
     case "Hỏa":
-      return "text-[#dc2626] font-bold"
+      return "text-[#DC2626] font-bold"
     case "Thủy":
-      return "text-[#1d4ed8] font-bold"
+      return "text-[#0284C7] font-bold"
     case "Mộc":
-      return "text-[#15803d] font-bold"
+      return "text-[#15803D] font-bold"
     case "Thổ":
-      return "text-[#ca8a04] font-bold"
+      return "text-[#B45309] font-bold"
     case "Kim":
     default:
-      return "text-[#334155] font-bold"
+      return "text-[#475569] font-bold"
   }
 }
 
-// Phân biệt sao cát nổi bật (Thiên khôi, Lộc tồn, Hóa khoa, Hóa quyền...)
-function getCatTinhStyle(sao: string) {
-  if (sao.includes("Thiên khôi") || sao.includes("Thiên việt") || sao.includes("Đào hoa")) {
-    return "text-[#dc2626] font-bold"
+// Màu theo ngũ hành cho bất kỳ sao nào (STAR -> NGŨ HÀNH -> COLOR)
+function getStarTextColor(saoName: string): string {
+  const element = getStarNguHanh(saoName)
+  switch (element) {
+    case "Hỏa":
+      return "text-[#DC2626]"
+    case "Thủy":
+      return "text-[#0284C7]"
+    case "Mộc":
+      return "text-[#15803D]"
+    case "Thổ":
+      return "text-[#B45309]"
+    case "Kim":
+    default:
+      return "text-[#475569]"
   }
-  if (sao.includes("Lộc Tồn") || sao.includes("L.Lộc Tồn")) {
-    return "text-[#92400e] font-bold"
-  }
-  if (sao.includes("Hóa quyền") || sao.includes("Hóa khoa")) {
-    return "text-[#1d4ed8] font-semibold"
-  }
-  if (sao.includes("Hóa lộc")) {
-    return "text-[#15803d] font-semibold"
-  }
-  return "text-stone-800 font-medium"
 }
 
 export function PalaceCell({ cell, isSelected, onClick, isMobileList = false }: PalaceCellProps) {
@@ -215,26 +216,26 @@ export function PalaceCell({ cell, isSelected, onClick, isMobileList = false }: 
         {/* Cột trái: Cát tinh và các sao tốt */}
         <div className="flex flex-col space-y-0.5 text-left pr-0.5">
           {saoCat.slice(0, 8).map((sao) => (
-            <span key={sao} className={cn("truncate", getCatTinhStyle(sao))}>
+            <span key={sao} className={cn("truncate font-medium", getStarTextColor(sao))}>
               {sao}
             </span>
           ))}
         </div>
 
-        {/* Cột phải: Sát tinh (đỏ nổi bật) & Badge TRIỆT / TUẦN */}
+        {/* Cột phải: Sát tinh & Badge TRIỆT / TUẦN */}
         <div className="flex flex-col space-y-0.5 text-right pl-0.5 items-end">
           {triet && (
-            <span className="inline-block bg-[#0284c7] text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded shadow-sm mb-0.5 tracking-wider">
+            <span className="inline-block bg-[#475569] text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded shadow-sm mb-0.5 tracking-wider">
               TRIỆT
             </span>
           )}
           {tuan && (
-            <span className="inline-block bg-[#15803d] text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded shadow-sm mb-0.5 tracking-wider">
+            <span className="inline-block bg-[#15803D] text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded shadow-sm mb-0.5 tracking-wider">
               TUẦN
             </span>
           )}
           {saoHung.slice(0, 8).map((sao) => (
-            <span key={sao} className="text-[#b91c1c] font-bold truncate">
+            <span key={sao} className={cn("font-bold truncate", getStarTextColor(sao))}>
               {sao}
             </span>
           ))}

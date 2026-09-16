@@ -10,3 +10,4 @@ export * from "./ChartCenter";
 export * from "./ChartDecoration";
 export * from "./TuViChart";
 export * from "./TuViChartViewer";
+export * from "./lines";

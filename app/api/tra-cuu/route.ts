@@ -70,7 +70,25 @@ export async function POST(request: Request) {
     const canChiNamXem = getCanChiNam(xemNam);
 
     // 2. Tính Can Chi Năm, Tháng, Ngày, Giờ
-    const gioIndex = CHI.indexOf(input.gio) !== -1 ? CHI.indexOf(input.gio) : 0;
+    let gioName = input.gio;
+    if (!gioName || CHI.indexOf(gioName) === -1) {
+      if (input.birthHour !== undefined) {
+        const validH = Math.max(0, Math.min(23, Number(input.birthHour) || 0));
+        gioName = CHI[Math.floor(((validH + 1) % 24) / 2)];
+      } else if (input.birthTime && input.birthTime.includes(":")) {
+        const h = parseInt(input.birthTime.split(":")[0], 10);
+        if (!isNaN(h)) {
+          const validH = Math.max(0, Math.min(23, h));
+          gioName = CHI[Math.floor(((validH + 1) % 24) / 2)];
+        }
+      }
+    }
+    const gioIndex = CHI.indexOf(gioName) !== -1 ? CHI.indexOf(gioName) : 0;
+    if (!input.birthTime && input.birthHour !== undefined) {
+      input.birthTime = `${String(input.birthHour).padStart(2, "0")}:${String(input.birthMinute || 0).padStart(2, "0")}`;
+    }
+    input.gio = gioName || CHI[gioIndex];
+
     const canChiNam = getCanChiNam(lunarDate.nam);
     const canChiThang = getCanChiThang(lunarDate.thang, lunarDate.nam);
     // Tính Can Chi Ngày theo ngày Dương Lịch tương ứng (Julian Day Number)

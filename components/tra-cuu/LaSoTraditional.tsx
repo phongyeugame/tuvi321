@@ -14,8 +14,10 @@ import {
   ZoomIn,
   ZoomOut,
   LayoutGrid,
-  List
+  List,
 } from "lucide-react"
+import { computeTraditionalLines } from "@/components/tuvi-chart/lines"
+import { getNguHanhColor } from "@/components/tuvi-chart/constants"
 
 // Vị trí chuẩn của 12 Địa Chi trên bàn cờ 4x4 Tử Vi Bắc Phái
 const TRADITIONAL_GRID_COORDINATES: Record<string, { col: number; row: number; conGiap: string; mauNen: string }> = {
@@ -113,6 +115,24 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
   const activePalace = useMemo(() => {
     return chartData.find((c) => c.chi === selectedChi) || chartData[0]
   }, [chartData, selectedChi])
+
+  // Tính toán các đường Tam Hợp, Xung Chiếu, Thân cư động theo Ngũ Hành thực tế của lá số
+  const traditionalLines = useMemo(() => {
+    return computeTraditionalLines(data, 1000)
+  }, [data])
+
+  // Thu thập điểm neo duy nhất trên mép biên bàn cờ truyền thống
+  const traditionalAnchorPoints = useMemo(() => {
+    const map = new Map<string, { x: number; y: number; color: string }>();
+    traditionalLines.forEach((l) => {
+      const color = getNguHanhColor(l.nguHanh || l.element);
+      const k1 = `${Math.round(l.x1)},${Math.round(l.y1)}`;
+      if (!map.has(k1)) map.set(k1, { x: l.x1, y: l.y1, color });
+      const k2 = `${Math.round(l.x2)},${Math.round(l.y2)}`;
+      if (!map.has(k2)) map.set(k2, { x: l.x2, y: l.y2, color });
+    });
+    return Array.from(map.values());
+  }, [traditionalLines]);
 
   // Tải ảnh PNG bằng html2canvas
   const handleDownloadImage = async () => {
@@ -242,20 +262,6 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
               style={{ backgroundColor: "#f5ecd7" }}
               className="grid grid-cols-4 grid-rows-4 gap-0 border-2 border-[#8b3a3a] shadow-2xl relative select-none rounded-lg overflow-hidden font-sans"
             >
-              {/* 2 Đường chéo mờ màu xanh/đỏ cắt qua bảng trung tâm (Tam Hợp & Xung Chiếu Hoạt Ảnh) */}
-              <svg
-                viewBox="0 0 1000 1000"
-                className="absolute inset-0 w-full h-full pointer-events-none z-5 opacity-45"
-              >
-                {/* Đường Xung Chiếu Mệnh (Hợi: 875, 875) tới Thiên Di (Tỵ: 125, 125) */}
-                <line x1="875" y1="875" x2="125" y2="125" stroke="#dc2626" strokeWidth="1.8" strokeDasharray="6 4" className="animate-dash" />
-                {/* Tam Hợp Mệnh: Hợi (875,875) - Mão (125, 625) - Mùi (625, 125) */}
-                <polygon points="875,875 125,625 625,125" fill="none" stroke="#dc2626" strokeWidth="1.5" strokeDasharray="5 4" className="animate-dash" />
-                {/* Đường Thân cư & Hạn (Xanh dương & Đỏ) */}
-                <line x1="125" y1="375" x2="875" y2="875" stroke="#2563eb" strokeWidth="1.4" strokeDasharray="5 4" className="animate-dash" />
-                <line x1="375" y1="125" x2="875" y2="875" stroke="#dc2626" strokeWidth="1.3" strokeDasharray="5 4" className="animate-dash" />
-              </svg>
-
               {/* 12 Ô Cung Xung Quanh */}
               {chartData.map((cell) => (
                 <PalaceCell
@@ -274,6 +280,65 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                 adminPhone={adminPhone}
                 formattedPhone={formattedPhone}
               />
+
+              {/* Các đường nối Tam Hợp & Xung Chiếu động theo Ngũ Hành lá số thực tế - Đặt ở z-10 nổi bật trên nền */}
+              <svg
+                viewBox="0 0 1000 1000"
+                className="absolute inset-0 w-full h-full pointer-events-none z-10"
+              >
+                {traditionalLines.map((line) => {
+                  const strokeColor = getNguHanhColor(line.nguHanh || line.element);
+                  return (
+                    <g key={line.id}>
+                      {/* Đường nền mờ tăng tương phản và độ nổi bật */}
+                      <line
+                        x1={line.x1}
+                        y1={line.y1}
+                        x2={line.x2}
+                        y2={line.y2}
+                        stroke={strokeColor}
+                        strokeWidth={(line.strokeWidth || 2.2) + 2.5}
+                        opacity={0.25}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {/* Đường chính nét đứt theo Ngũ Hành rõ nét */}
+                      <line
+                        x1={line.x1}
+                        y1={line.y1}
+                        x2={line.x2}
+                        y2={line.y2}
+                        stroke={strokeColor}
+                        strokeWidth={line.strokeWidth || 2.2}
+                        strokeDasharray={line.dashArray || "7 5"}
+                        opacity={line.opacity || 0.9}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="animate-dash"
+                      />
+                    </g>
+                  );
+                })}
+                {/* Điểm neo viền tinh tế nằm trên mép biên ngăn cách cung và ô trung tâm */}
+                {traditionalAnchorPoints.map((pt, idx) => (
+                  <g key={`trad-anchor-${pt.x}-${pt.y}-${idx}`}>
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={3.8}
+                      fill="#f5ecd7"
+                      stroke={pt.color}
+                      strokeWidth={1.8}
+                    />
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={1.6}
+                      fill={pt.color}
+                    />
+                  </g>
+                ))}
+              </svg>
             </div>
           </div>
         </div>

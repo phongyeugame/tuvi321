@@ -291,6 +291,30 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
         </div>
       </div>
 
+      {/* 1.1. Dải Phân Loại Màu Ngũ Hành (Bản Đồ Ngũ Hành Legend) */}
+      <div className="w-full flex items-center justify-between flex-wrap gap-2 px-3.5 py-2 bg-[#FFFDF9] border border-[#8B3A3A]/35 rounded-xl shadow-2xs text-xs text-stone-700 no-print">
+        <span className="font-serif font-bold text-[#8B3A3A] flex items-center gap-1.5">
+          <span>Bản Đồ Ngũ Hành:</span>
+        </span>
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-400/60 text-[#475569] font-extrabold shadow-2xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#475569]" /> KIM
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-500/60 text-[#15803D] font-extrabold shadow-2xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#15803D]" /> MỘC
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-sky-50 border border-sky-500/60 text-[#0284C7] font-extrabold shadow-2xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0284C7]" /> THỦY
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-red-50 border border-red-500/60 text-[#DC2626] font-extrabold shadow-2xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" /> HỎA
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-500/60 text-[#B45309] font-extrabold shadow-2xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#B45309]" /> THỔ
+          </span>
+        </div>
+      </div>
+
       {/* 2. Vùng Hiển Thị SVG Chart */}
       {displayMode === "fit-screen" ? (
         /* CHẾ ĐỘ 1: XEM TOÀN CẢNH - TOÀN BỘ 12 CUNG VỪA VẶN MÀN HÌNH KHÔNG CẦN CUỘN */

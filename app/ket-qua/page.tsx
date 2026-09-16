@@ -20,6 +20,10 @@ function KetQuaContent() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const birthTimeParam = searchParams.get("birthTime")
+        const birthHourParam = searchParams.get("birthHour")
+        const birthMinuteParam = searchParams.get("birthMinute")
+
         // Construct input payload from searchParams
         const payload = {
           hoTen: searchParams.get("hoTen") || "Chưa rõ",
@@ -29,6 +33,9 @@ function KetQuaContent() {
           thang: parseInt(searchParams.get("thang") || "1"),
           nam: parseInt(searchParams.get("nam") || "1990"),
           gio: searchParams.get("gio") || "Tý",
+          birthTime: birthTimeParam || undefined,
+          birthHour: birthHourParam ? parseInt(birthHourParam, 10) : undefined,
+          birthMinute: birthMinuteParam ? parseInt(birthMinuteParam, 10) : undefined,
           namXemVanHan: parseInt(searchParams.get("namXemVanHan") || new Date().getFullYear().toString()),
         }
 
@@ -92,7 +99,7 @@ function KetQuaContent() {
               Lá Số: {data.input.hoTen}
             </h1>
             <p className="text-muted text-xs md:text-sm mt-1">
-              Âm lịch: {data.lunarDate.ngay}/{data.lunarDate.thang}/{data.lunarDate.nam} ({data.canChi.nam}) - Giờ {data.canChi.gio} | Bản mệnh: {data.nguHanh}
+              Âm lịch: {data.lunarDate.ngay}/{data.lunarDate.thang}/{data.lunarDate.nam} ({data.canChi.nam}) - Giờ {data.canChi.gio} {data.input.birthTime ? `(${data.input.birthTime})` : ""} | Bản mệnh: {data.nguHanh}
             </p>
           </div>
 

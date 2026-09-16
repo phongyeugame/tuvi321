@@ -1,15 +1,50 @@
 import { UserChartInfo, TuViChartData } from "./types";
+import { NGU_HANH_COLORS, getNguHanhColor } from "./constants";
+import { getStarColor } from "./Star";
+import {
+  computeCenterRadialLines,
+  extractNguHanhFromString,
+  getTamHopNguHanh,
+  getBranchNguHanh,
+} from "./lines";
 
 interface ChartCenterProps {
   user: UserChartInfo;
   metadata?: TuViChartData["metadata"];
+  chart?: TuViChartData;
   x: number;
   y: number;
   width: number;
   height: number;
+  bgOnly?: boolean;
+  contentOnly?: boolean;
 }
 
-export function ChartCenter({ user, metadata, x, y, width, height }: ChartCenterProps) {
+export function ChartCenter({
+  user,
+  metadata,
+  chart,
+  x,
+  y,
+  width,
+  height,
+  bgOnly = false,
+  contentOnly = false,
+}: ChartCenterProps) {
+  // Nếu chỉ render nền để tối ưu phân lớp Layering (nền -> đường nối -> nội dung)
+  if (bgOnly) {
+    return (
+      <rect
+        key="center-bg"
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill="#FFFDF9"
+      />
+    );
+  }
+
   const centerX = x + width / 2;
   const centerY = y + height / 2;
   const title = metadata?.title || "LÁ SỐ TỬ VI";
@@ -32,16 +67,23 @@ export function ChartCenter({ user, metadata, x, y, width, height }: ChartCenter
   const matrixStartY = scoreBarY + 45;
   const matrixColWidth = (width - 56) / 4;
 
+  // Tính toán các đường trục xung chiếu xuyên tâm ĐỘNG theo Ngũ Hành của lá số
+  const radialLines = chart
+    ? computeCenterRadialLines(x, y, width, height, chart)
+    : [];
+
   return (
     <g id="chart-center" className="chart-center select-none">
-      {/* 1. Nền Thiên Bàn trung tâm */}
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        fill="#FFFDF9"
-      />
+      {/* 1. Nền Thiên Bàn trung tâm (bỏ qua nếu contentOnly vì đã render ở background-layer) */}
+      {!contentOnly && (
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill="#FFFDF9"
+        />
+      )}
 
       {/* 2. Đường viền nét đứt màu nâu đỏ */}
       <rect
@@ -56,16 +98,38 @@ export function ChartCenter({ user, metadata, x, y, width, height }: ChartCenter
         strokeOpacity="0.6"
       />
 
-      {/* 3.1. Các đường chỉ đỏ mảnh hướng tâm (Trục xung chiếu xuyên tâm theo phong cách truyền thống) */}
-      <g className="radial-rays pointer-events-none" opacity="0.22" stroke="#DC2626" strokeWidth="0.8" strokeDasharray="3 3">
-        <line x1={x} y1={y} x2={x + width} y2={y + height} />
-        <line x1={x + width} y1={y} x2={x} y2={y + height} />
-        <line x1={centerX} y1={y} x2={centerX} y2={y + height} />
-        <line x1={x} y1={centerY} x2={x + width} y2={centerY} />
-        <line x1={x + width * 0.25} y1={y} x2={x + width * 0.75} y2={y + height} />
-        <line x1={x + width * 0.75} y1={y} x2={x + width * 0.25} y2={y + height} />
-        <line x1={x} y1={y + height * 0.25} x2={x + width} y2={y + height * 0.75} />
-        <line x1={x} y1={y + height * 0.75} x2={x + width} y2={y + height * 0.25} />
+      {/* 3.1. Các đường chỉ / trục xung chiếu xuyên tâm được xác định ĐỘNG theo Ngũ Hành của lá số */}
+      <g className="radial-rays pointer-events-none">
+        {radialLines.map((line) => {
+          const strokeColor = getNguHanhColor(line.nguHanh || line.element);
+          return (
+            <g key={line.id}>
+              {/* Đường nền mờ tăng tương phản */}
+              <line
+                x1={line.x1}
+                y1={line.y1}
+                x2={line.x2}
+                y2={line.y2}
+                stroke={strokeColor}
+                strokeWidth={(line.strokeWidth || 2) + 2}
+                opacity={0.2}
+                strokeLinecap="round"
+              />
+              {/* Đường tia chính nét đứt rõ nét */}
+              <line
+                x1={line.x1}
+                y1={line.y1}
+                x2={line.x2}
+                y2={line.y2}
+                stroke={strokeColor}
+                strokeWidth={line.strokeWidth || 2}
+                strokeDasharray={line.dashArray || "6 4"}
+                opacity={line.opacity || 0.75}
+                strokeLinecap="round"
+              />
+            </g>
+          );
+        })}
       </g>
 
       {/* 3.2. Vòng Tròn Họa Tiết Cổ Điển Nghệ Thuật Nền (Celestial Mandala Ornament) */}
@@ -242,13 +306,13 @@ export function ChartCenter({ user, metadata, x, y, width, height }: ChartCenter
 
         {/* Dòng 7: Cục */}
         <text x={x + 28} y={infoStartY + infoLineHeight * 6} fill="#4b5563">Cục:</text>
-        <text x={x + width - 28} y={infoStartY + infoLineHeight * 6} textAnchor="end" fill="#15803d" fontWeight="700">
+        <text x={x + width - 28} y={infoStartY + infoLineHeight * 6} textAnchor="end" fill={getNguHanhColor(user.cuc)} fontWeight="700">
           {user.cuc} {user.menhKhacCuc ? `(${user.menhKhacCuc})` : ""}
         </text>
 
         {/* Dòng 8: Bản Mệnh */}
         <text x={x + 28} y={infoStartY + infoLineHeight * 7} fill="#4b5563">Bản Mệnh:</text>
-        <text x={x + width - 28} y={infoStartY + infoLineHeight * 7} textAnchor="end" fill="#b45309" fontWeight="700">
+        <text x={x + width - 28} y={infoStartY + infoLineHeight * 7} textAnchor="end" fill={getNguHanhColor(user.menh)} fontWeight="700">
           {user.menh}
         </text>
 
@@ -260,13 +324,13 @@ export function ChartCenter({ user, metadata, x, y, width, height }: ChartCenter
 
         {/* Dòng 10: *Chủ Mệnh */}
         <text x={x + 28} y={infoStartY + infoLineHeight * 9} fill="#4b5563">*Chủ Mệnh:</text>
-        <text x={x + width - 28} y={infoStartY + infoLineHeight * 9} textAnchor="end" fill="#b91c1c" fontWeight="700">
+        <text x={x + width - 28} y={infoStartY + infoLineHeight * 9} textAnchor="end" fill={getStarColor({ name: user.chuMenh || "Vũ Khúc" })} fontWeight="700">
           {user.chuMenh || "Vũ Khúc"}
         </text>
 
         {/* Dòng 11: *Chủ Thân */}
         <text x={x + 28} y={infoStartY + infoLineHeight * 10} fill="#4b5563">*Chủ Thân:</text>
-        <text x={x + width - 28} y={infoStartY + infoLineHeight * 10} textAnchor="end" fill="#1d4ed8" fontWeight="700">
+        <text x={x + width - 28} y={infoStartY + infoLineHeight * 10} textAnchor="end" fill={getStarColor({ name: user.chuThan || "Thiên Cơ" })} fontWeight="700">
           {user.chuThan || "Thiên Cơ"}
         </text>
 
@@ -422,11 +486,134 @@ export function ChartCenter({ user, metadata, x, y, width, height }: ChartCenter
 
         {/* Hàng 4: 2 mục lớn theo đúng ảnh mẫu */}
         <text x={x + 24} y={matrixStartY + 68} fill="#4b5563">
-          Mệnh Kim khắc Cục <tspan fill="#15803d" fontWeight="700">Mộc:</tspan>
-          <tspan fill="#dc2626" fontWeight="700">-2</tspan>
+          Mệnh <tspan fill={NGU_HANH_COLORS.kim} fontWeight="800">Kim</tspan> khắc Cục <tspan fill={NGU_HANH_COLORS.moc} fontWeight="800">Mộc:</tspan>
+          <tspan fill="#dc2626" fontWeight="700"> -2</tspan>
         </text>
         <text x={x + 24 + matrixColWidth * 2} y={matrixStartY + 68} fill="#4b5563">
-          Âm Dương thuận lý:<tspan fill="#dc2626" fontWeight="700">1.5</tspan>
+          Âm Dương thuận lý: <tspan fill="#dc2626" fontWeight="700">1.5</tspan>
+        </text>
+      </g>
+
+      {/* 8. Bản Đồ / Legend Ngũ Hành (Đậm Nét, Tương Phản Rõ Ràng Chuẩn Phong Thủy) */}
+      <g className="ngu-hanh-legend-section select-none">
+        <line
+          x1={x + 24}
+          y1={matrixStartY + 88}
+          x2={x + width - 24}
+          y2={matrixStartY + 88}
+          stroke="#8B3A3A"
+          strokeWidth="0.8"
+          strokeDasharray="3 3"
+          strokeOpacity="0.45"
+        />
+
+        {/* Tiêu đề Bản Đồ Ngũ Hành */}
+        <text
+          x={centerX}
+          y={matrixStartY + 107}
+          textAnchor="middle"
+          fill="#4A2424"
+          fontSize="11"
+          fontWeight="800"
+          letterSpacing="2.5"
+          fontFamily="var(--font-serif), 'Playfair Display', serif"
+        >
+          BẢN ĐỒ NGŨ HÀNH
+        </text>
+
+        {/* 5 Hộp Badge Ngũ Hành Đậm Nét: KIM - MỘC - THỦY - HỎA - THỔ */}
+        {(() => {
+          const badgeWidth = 92;
+          const badgeHeight = 28;
+          const gap = 12;
+          const totalWidth = badgeWidth * 5 + gap * 4;
+          const startX = centerX - totalWidth / 2;
+          const badgeY = matrixStartY + 116;
+
+          const elements = [
+            { name: "KIM", color: NGU_HANH_COLORS.kim, bg: "#F1F5F9", border: NGU_HANH_COLORS.kim },
+            { name: "MỘC", color: NGU_HANH_COLORS.moc, bg: "#F0FDF4", border: NGU_HANH_COLORS.moc },
+            { name: "THỦY", color: NGU_HANH_COLORS.thuy, bg: "#F0F9FF", border: NGU_HANH_COLORS.thuy },
+            { name: "HỎA", color: NGU_HANH_COLORS.hoa, bg: "#FEF2F2", border: NGU_HANH_COLORS.hoa },
+            { name: "THỔ", color: NGU_HANH_COLORS.tho, bg: "#FEF9EC", border: NGU_HANH_COLORS.tho },
+          ];
+
+          return elements.map((item, idx) => {
+            const bx = startX + idx * (badgeWidth + gap);
+            return (
+              <g key={item.name} className="element-badge">
+                <rect
+                  x={bx}
+                  y={badgeY}
+                  width={badgeWidth}
+                  height={badgeHeight}
+                  rx={5}
+                  fill={item.bg}
+                  stroke={item.border}
+                  strokeWidth="1.5"
+                />
+                <circle
+                  cx={bx + 16}
+                  cy={badgeY + badgeHeight / 2}
+                  r="5"
+                  fill={item.color}
+                />
+                <text
+                  x={bx + 28}
+                  y={badgeY + 18.5}
+                  fill={item.color}
+                  fontSize="12.5"
+                  fontWeight="900"
+                  fontFamily="var(--font-sans), 'Inter', sans-serif"
+                  letterSpacing="0.8"
+                >
+                  {item.name}
+                </text>
+              </g>
+            );
+          });
+        })()}
+
+        {/* Dòng hiển thị Ngũ Hành của các đường nối thực tế của lá số */}
+        {(() => {
+          const menhElement = extractNguHanhFromString(user.menh);
+          const menhPalace = chart?.palaces.find((p) => p.isMenh || p.name.includes("MỆNH"));
+          const tamHopElement = menhPalace ? getTamHopNguHanh(menhPalace.branch) : "Thủy";
+          const thanPalace = chart?.palaces.find((p) => p.isThan);
+          const thanElement = thanPalace ? getBranchNguHanh(thanPalace.branch) : extractNguHanhFromString(user.chuThan);
+          const cucElement = extractNguHanhFromString(user.cuc);
+
+          return (
+            <g transform={`translate(0, ${matrixStartY + 155})`} fontSize="10" fontFamily="var(--font-sans), 'Inter', sans-serif">
+              <text x={centerX} y="0" textAnchor="middle">
+                <tspan fill="#64748B" fontWeight="600">Đường Trục Lá Số:</tspan>{" "}
+                <tspan fill="#334155">Mệnh-Di:</tspan>{" "}
+                <tspan fill={getNguHanhColor(menhElement)} fontWeight="800">{menhElement.toUpperCase()}</tspan>
+                {"   "}•{"   "}
+                <tspan fill="#334155">Tam Hợp:</tspan>{" "}
+                <tspan fill={getNguHanhColor(tamHopElement)} fontWeight="800">{tamHopElement.toUpperCase()}</tspan>
+                {"   "}•{"   "}
+                <tspan fill="#334155">Thân Cư:</tspan>{" "}
+                <tspan fill={getNguHanhColor(thanElement)} fontWeight="800">{thanElement.toUpperCase()}</tspan>
+                {"   "}•{"   "}
+                <tspan fill="#334155">Cục:</tspan>{" "}
+                <tspan fill={getNguHanhColor(cucElement)} fontWeight="800">{cucElement.toUpperCase()}</tspan>
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* Dòng ghi chú tinh tế */}
+        <text
+          x={centerX}
+          y={matrixStartY + 172}
+          textAnchor="middle"
+          fill="#64748B"
+          fontSize="9"
+          fontWeight="500"
+          fontFamily="var(--font-sans), 'Inter', sans-serif"
+        >
+          Màu các đường chỉ và sao được xác định tự động theo đúng Ngũ Hành của lá số
         </text>
       </g>
     </g>

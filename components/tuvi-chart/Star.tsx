@@ -1,5 +1,6 @@
 import React from "react";
-import { StarItem, STAR_COLORS } from "./types";
+import { StarItem } from "./types";
+import { NGU_HANH_COLORS, getNguHanhColor, getStarNguHanh } from "./constants";
 
 interface StarProps {
   star: StarItem;
@@ -9,88 +10,23 @@ interface StarProps {
   isMajor?: boolean;
 }
 
-// Lấy mã màu chuẩn của sao theo ảnh mẫu và nguyên tắc phong thủy
-function getStarColor(star: StarItem): string {
+// Lấy mã màu chuẩn Ngũ Hành của sao (STAR -> NGŨ HÀNH -> COLOR)
+export function getStarColor(star: StarItem | { name: string; nguHanh?: string; colorType?: string }): string {
   if (star.colorType) return star.colorType;
 
-  // 1. Chính tinh: Phân theo Ngũ Hành
-  if (star.category === "main") {
-    switch (star.nguHanh) {
-      case "Hỏa":
-        return "#DC2626"; // Đỏ tươi (Thái Dương, Liêm Trinh)
-      case "Thủy":
-        return "#0284C7"; // Xanh dương đậm (Vũ Khúc, Phá Quân, Thiên Đồng, Thái Âm, Tham Lang, Cự Môn, Thiên Tướng)
-      case "Mộc":
-        return "#15803D"; // Xanh lá cây (Thiên Cơ, Thiên Lương)
-      case "Thổ":
-        return "#B45309"; // Nâu vàng / Hổ phách (Tử Vi, Thiên Phủ)
-      case "Kim":
-      default:
-        return "#1D4ED8"; // Xanh đậm / Kim (Thất Sát)
-    }
+  // 1. Ưu tiên hàng đầu: Thuộc tính ngũ hành được truyền trực tiếp
+  if (star.nguHanh) {
+    return getNguHanhColor(star.nguHanh);
   }
 
-  const name = star.name;
-
-  // 2. Cát Tinh
-  if (star.category === "auspicious") {
-    if (
-      name.includes("Khôi") ||
-      name.includes("Việt") ||
-      name.includes("Mã") ||
-      name.includes("Loan") ||
-      name.includes("Hỷ") ||
-      name.includes("Đường phù") ||
-      name.includes("Quốc ấn")
-    ) {
-      return "#DC2626"; // Đỏ nổi bật
-    }
-    if (name.includes("Lộc tồn") || name.includes("Lộc Tồn") || name.includes("Phượng các") || name.includes("Tả phù") || name.includes("Hữu bật") || name.includes("Hoa cái")) {
-      return "#B45309"; // Nâu vàng cam
-    }
-    if (name.includes("Hóa khoa") || name.includes("Hóa Khoa") || name.includes("Hóa quyền") || name.includes("Hóa Quyền") || name.includes("Văn khúc") || name.includes("Thanh long") || name.includes("Tam thai") || name.includes("Bát tọa") || name.includes("Thiên quý")) {
-      return "#0284C7"; // Xanh lam
-    }
-    if (name.includes("Hóa lộc") || name.includes("Hóa Lộc") || name.includes("Đào hoa") || name.includes("Giải thần") || name.includes("Long đức")) {
-      return "#15803D"; // Xanh lá
-    }
-    return "#334155"; // Xám đen tinh tế
+  // 2. Tra cứu từ điển ngũ hành toàn diện theo tên sao
+  const element = getStarNguHanh(star.name);
+  if (element) {
+    return getNguHanhColor(element);
   }
 
-  // 3. Sát/Hung Tinh
-  if (star.category === "inauspicious" || star.category === "annual") {
-    if (
-      name.includes("Kình") ||
-      name.includes("Đà") ||
-      name.includes("Không") ||
-      name.includes("Kiếp") ||
-      name.includes("Hỏa") ||
-      name.includes("Linh") ||
-      name.includes("Hình") ||
-      name.includes("Tuế") ||
-      name.includes("Phá") ||
-      name.includes("Tang") ||
-      name.includes("Hổ") ||
-      name.includes("Khốc") ||
-      name.includes("Hư") ||
-      name.includes("Điếu khách") ||
-      name.includes("Phi liêm") ||
-      name.includes("Đại hao") ||
-      name.includes("Tiểu hao") ||
-      name.includes("Đầu quân")
-    ) {
-      return "#DC2626"; // Đỏ cảnh báo
-    }
-    if (name.includes("Hóa kỵ") || name.includes("Hóa Kỵ")) {
-      return "#0284C7"; // Xanh đậm cho Hóa Kỵ
-    }
-    if (name.includes("Lưu hà")) {
-      return "#0284C7"; // Cyan cho Lưu Hà
-    }
-    return "#475569";
-  }
-
-  return "#1E293B";
+  // Fallback an toàn (màu Kim / Xám kim loại đậm tương phản cao)
+  return NGU_HANH_COLORS.kim;
 }
 
 export function Star({ star, x, y, align = "left", isMajor = false }: StarProps) {

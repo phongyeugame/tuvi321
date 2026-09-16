@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/Button"
 import { ScrollReveal } from "@/components/ui/ScrollReveal"
 
 export default function SinhConPage() {
-  const [fatherYear, setFatherYear] = useState<number>(1992)
-  const [motherYear, setMotherYear] = useState<number>(1995)
-  const [childYear, setChildYear] = useState<number>(2026)
+  const [fatherYearInput, setFatherYearInput] = useState<string>("1992")
+  const [motherYearInput, setMotherYearInput] = useState<string>("1995")
+  const [childYearInput, setChildYearInput] = useState<string>("2026")
   const [result, setResult] = useState<any>(null)
 
   const handleCalculate = (e: React.FormEvent) => {
@@ -36,34 +36,37 @@ export default function SinhConPage() {
             <div>
               <label className="block text-sm font-medium text-muted mb-2">Năm sinh bố</label>
               <input
-                type="number"
-                value={fatherYear}
-                onChange={(e) => setFatherYear(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={fatherYearInput}
+                placeholder="VD: 1992"
+                onChange={(e) => setFatherYearInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 className="w-full bg-background/50 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-gold"
-                min={1950}
-                max={2020}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-muted mb-2">Năm sinh mẹ</label>
               <input
-                type="number"
-                value={motherYear}
-                onChange={(e) => setMotherYear(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={motherYearInput}
+                placeholder="VD: 1995"
+                onChange={(e) => setMotherYearInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 className="w-full bg-background/50 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-gold"
-                min={1950}
-                max={2020}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-muted mb-2">Năm dự sinh</label>
               <input
-                type="number"
-                value={childYear}
-                onChange={(e) => setChildYear(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={childYearInput}
+                placeholder="VD: 2026"
+                onChange={(e) => setChildYearInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 className="w-full bg-background/50 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-gold"
-                min={2024}
-                max={2035}
               />
             </div>
           </div>

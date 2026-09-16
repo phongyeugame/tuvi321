@@ -4,6 +4,11 @@ import React from "react"
 import { Phone } from "lucide-react"
 import { CentralFengShuiSeal } from "./ZodiacArt"
 import { LaSoTuVi } from "@/lib/tuvi/types"
+import { getNguHanhColor } from "@/components/tuvi-chart/constants"
+import {
+  getTamHopNguHanh,
+  getBranchNguHanh,
+} from "@/components/tuvi-chart/lines"
 
 interface CenterInfoProps {
   data: LaSoTuVi
@@ -13,23 +18,37 @@ interface CenterInfoProps {
 }
 
 export function CenterInfo({ data, adminName, adminPhone, formattedPhone }: CenterInfoProps) {
+  // Màu sắc động xác định trực tiếp từ dữ liệu Ngũ Hành của lá số
+  const menhColor = getNguHanhColor(data.nguHanh)
+  const tamHopColor = getNguHanhColor(getTamHopNguHanh(data.cungMenh))
+  const thanColor = getNguHanhColor(getBranchNguHanh(data.cungThan))
+  const cucColor = getNguHanhColor(data.cuc)
+
   return (
     <div
       style={{ gridColumn: "2 / 4", gridRow: "2 / 4" }}
       className="bg-[#fffdfa] border-dashed border-[#8b3a3a] p-3 md:p-4 flex flex-col justify-between relative overflow-hidden z-1 border select-none"
     >
-      {/* 2 Đường Chéo Mờ Biểu Tượng Trục Tam Hợp / Xung Chiếu Cắt Qua Bảng Trung Tâm */}
+      {/* 2 Đường Chéo Biểu Tượng Trục Tam Hợp / Xung Chiếu Cắt Qua Bảng Trung Tâm theo Ngũ Hành */}
       <svg
         viewBox="0 0 100 100"
-        className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-45"
+        className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-80"
         preserveAspectRatio="none"
       >
-        {/* Đường chéo Đỏ: Xung chiếu */}
-        <line x1="100" y1="100" x2="0" y2="0" stroke="#dc2626" strokeWidth="1.2" strokeDasharray="4 3" className="animate-dash" />
-        {/* Đường chéo Xanh: Tam hợp */}
-        <line x1="100" y1="100" x2="0" y2="33" stroke="#dc2626" strokeWidth="1" strokeDasharray="3 3" className="animate-dash" />
-        <line x1="100" y1="100" x2="66" y2="0" stroke="#dc2626" strokeWidth="1" strokeDasharray="3 3" className="animate-dash" />
-        <line x1="50" y1="50" x2="66" y2="0" stroke="#2563eb" strokeWidth="0.8" strokeDasharray="2 2" className="animate-dash" />
+        {/* Đường Xung Chiếu Mệnh - Thiên Di theo Ngũ Hành Bản Mệnh */}
+        <line x1="100" y1="100" x2="0" y2="0" stroke={menhColor} strokeWidth="3.2" opacity="0.25" strokeLinecap="round" />
+        <line x1="100" y1="100" x2="0" y2="0" stroke={menhColor} strokeWidth="1.8" strokeDasharray="4 3" strokeLinecap="round" className="animate-dash" />
+
+        {/* Đường Tam Hợp Mệnh theo Cục Tam Hợp */}
+        <line x1="100" y1="100" x2="0" y2="33" stroke={tamHopColor} strokeWidth="2.8" opacity="0.25" strokeLinecap="round" />
+        <line x1="100" y1="100" x2="0" y2="33" stroke={tamHopColor} strokeWidth="1.6" strokeDasharray="4 3" strokeLinecap="round" className="animate-dash" />
+
+        <line x1="100" y1="100" x2="66" y2="0" stroke={tamHopColor} strokeWidth="2.8" opacity="0.25" strokeLinecap="round" />
+        <line x1="100" y1="100" x2="66" y2="0" stroke={tamHopColor} strokeWidth="1.6" strokeDasharray="4 3" strokeLinecap="round" className="animate-dash" />
+
+        {/* Đường Thân Cư theo Ngũ Hành Cung Thân */}
+        <line x1="50" y1="50" x2="66" y2="0" stroke={thanColor} strokeWidth="2.6" opacity="0.25" strokeLinecap="round" />
+        <line x1="50" y1="50" x2="66" y2="0" stroke={thanColor} strokeWidth="1.5" strokeDasharray="3 3" strokeLinecap="round" className="animate-dash" />
       </svg>
 
       {/* Logo Tròn Phong Thủy Rồng Vàng Ở Giữa (Hoạt ảnh nhịp thở phong thủy) */}

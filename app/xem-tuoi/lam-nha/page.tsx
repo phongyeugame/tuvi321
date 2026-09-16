@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/Button"
 import { ScrollReveal } from "@/components/ui/ScrollReveal"
 
 export default function LamNhaPage() {
-  const [birthYear, setBirthYear] = useState<number>(1990)
-  const [targetYear, setTargetYear] = useState<number>(new Date().getFullYear())
+  const [birthYearInput, setBirthYearInput] = useState<string>("1990")
+  const [targetYearInput, setTargetYearInput] = useState<string>(String(new Date().getFullYear()))
   const [result, setResult] = useState<any>(null)
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault()
+    const birthYear = parseInt(birthYearInput, 10) || 1990
+    const targetYear = parseInt(targetYearInput, 10) || new Date().getFullYear()
     const age = targetYear - birthYear + 1
     // Tam tai check (basic)
     const isTamTai = age % 3 === 0
@@ -47,23 +49,25 @@ export default function LamNhaPage() {
             <div>
               <label className="block text-sm font-medium text-muted mb-2">Năm sinh gia chủ</label>
               <input
-                type="number"
-                value={birthYear}
-                onChange={(e) => setBirthYear(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={birthYearInput}
+                placeholder="VD: 1990"
+                onChange={(e) => setBirthYearInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 className="w-full bg-background/50 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-gold"
-                min={1920}
-                max={2030}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-muted mb-2">Năm dự kiến làm nhà</label>
               <input
-                type="number"
-                value={targetYear}
-                onChange={(e) => setTargetYear(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={targetYearInput}
+                placeholder={`VD: ${new Date().getFullYear()}`}
+                onChange={(e) => setTargetYearInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 className="w-full bg-background/50 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-gold"
-                min={2024}
-                max={2040}
               />
             </div>
           </div>

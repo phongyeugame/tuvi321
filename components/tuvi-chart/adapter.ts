@@ -1,22 +1,24 @@
 import { LaSoTuVi, Cung, SaoChiTiet } from "@/lib/tuvi/types";
 import { TuViChartData, PalaceData, StarItem } from "./types";
-import { TRADITIONAL_PALACE_LAYOUT } from "./constants";
+import { TRADITIONAL_PALACE_LAYOUT, getStarNguHanh, formatTime2Digits } from "./constants";
+import { computeChartLines } from "./lines";
 
 // Chuyển đổi sao chi tiết từ backend sang StarItem của SVG chart
 function mapSaoToStarItem(sao: SaoChiTiet, defaultCat: "main" | "auspicious" | "inauspicious"): StarItem {
   return {
     name: sao.ten,
     brightness: sao.trangThai,
-    nguHanh: sao.nguHanh,
+    nguHanh: sao.nguHanh || getStarNguHanh(sao.ten),
     category: sao.loai === "chinh" ? "main" : sao.loai === "cat" ? "auspicious" : sao.loai === "hung" ? "inauspicious" : defaultCat,
   };
 }
 
-// Chuyển đổi tên sao chuỗi đơn thuần sang StarItem
+// Chuyển đổi tên sao chuỗi đơn thuần sang StarItem kèm Ngũ Hành
 function mapStringToStarItem(tenSao: string, category: "auspicious" | "inauspicious" | "main"): StarItem {
   return {
     name: tenSao,
     category,
+    nguHanh: getStarNguHanh(tenSao),
   };
 }
 
@@ -33,7 +35,7 @@ export function adaptLaSoTuViToChartData(data: LaSoTuVi): TuViChartData {
     const majorStars: StarItem[] = (c?.chinhTinhChiTiet || []).map((s) => ({
       name: s.ten,
       brightness: s.trangThai || "Đ",
-      nguHanh: s.nguHanh || "Kim",
+      nguHanh: s.nguHanh || getStarNguHanh(s.ten) || "Thổ",
       category: "main",
     }));
 
@@ -86,6 +88,7 @@ export function adaptLaSoTuViToChartData(data: LaSoTuVi): TuViChartData {
       lifeStage: c?.trangSinh || "Trường sinh",
       annualStemBranch: c?.tieuHanNam || `Năm ${chi}`,
       monthNumber: c?.nguyetHan || layout.col + layout.row + 1,
+      isMenh: (c?.ten || "").toLowerCase().includes("mệnh"),
       isThan: c?.isThan,
       triet: c?.triet,
       tuan: c?.tuan,
@@ -95,7 +98,7 @@ export function adaptLaSoTuViToChartData(data: LaSoTuVi): TuViChartData {
     };
   });
 
-  return {
+  const chartData: TuViChartData = {
     user: {
       name: data.input.hoTen || "Đương Số",
       gender: data.input.gioiTinh === "nam" ? "Nam" : "Nữ",
@@ -103,7 +106,7 @@ export function adaptLaSoTuViToChartData(data: LaSoTuVi): TuViChartData {
         ? `${String(data.solarDate.ngay).padStart(2, "0")}/${String(data.solarDate.thang).padStart(2, "0")}/${data.solarDate.nam}`
         : `${data.input.ngay}/${data.input.thang}/${data.input.nam}`,
       lunarDate: `${String(data.lunarDate.ngay).padStart(2, "0")}/${String(data.lunarDate.thang).padStart(2, "0")}/${data.lunarDate.nam}`,
-      birthHour: `giờ ${data.canChi.gio} (7:30)`,
+      birthHour: `giờ ${data.canChi.gio} (${data.input.birthTime || (data.input.birthHour !== undefined ? formatTime2Digits(data.input.birthHour, data.input.birthMinute || 0) : "07:30")})`,
       stemsBranches: {
         year: data.canChi.nam,
         month: data.canChi.thang,
@@ -149,6 +152,9 @@ export function adaptLaSoTuViToChartData(data: LaSoTuVi): TuViChartData {
       generatedAt: new Date().toISOString(),
     },
   };
+
+  chartData.lines = computeChartLines(chartData);
+  return chartData;
 }
 
 

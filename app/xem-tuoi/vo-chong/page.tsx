@@ -33,12 +33,26 @@ import {
 } from "lucide-react";
 
 export default function XemTuoiVoChongPage() {
-  const [namChong, setNamChong] = useState<number>(1990);
-  const [namVo, setNamVo] = useState<number>(1992);
+  const [namChongInput, setNamChongInput] = useState<string>("1990");
+  const [namVoInput, setNamVoInput] = useState<string>("1992");
   const [activePreset, setActivePreset] = useState<string>("1990-1992");
 
   // Năm hiện tại để tính tuổi mụ
   const currentYear = 2026;
+
+  // Năm hợp lệ dùng để tính toán (fallback về 1990 / 1992 khi đang gõ dở hoặc xóa trống)
+  const namChong = useMemo(() => {
+    const n = parseInt(namChongInput, 10);
+    return !isNaN(n) && n >= 1900 && n <= 2100 ? n : 1990;
+  }, [namChongInput]);
+
+  const namVo = useMemo(() => {
+    const n = parseInt(namVoInput, 10);
+    return !isNaN(n) && n >= 1900 && n <= 2100 ? n : 1992;
+  }, [namVoInput]);
+
+  const isChongValid = namChongInput.length === 4 && parseInt(namChongInput, 10) >= 1940 && parseInt(namChongInput, 10) <= 2035;
+  const isVoValid = namVoInput.length === 4 && parseInt(namVoInput, 10) >= 1940 && parseInt(namVoInput, 10) <= 2035;
 
   // Tính toán real-time
   const ketQua: KetQuaHopTuoi = useMemo(() => {
@@ -47,18 +61,36 @@ export default function XemTuoiVoChongPage() {
 
   // Preview nhanh Can Chi và Mệnh khi gõ
   const previewChong = useMemo(() => {
+    if (!isChongValid) {
+      return {
+        canChi: namChongInput ? "Đang nhập..." : "--",
+        napAm: namChongInput ? "Đang nhập..." : "--",
+        cung: "--",
+        hanh: "--",
+        tuoiMu: null as number | null,
+      };
+    }
     const canChi = getCanChiNam(namChong);
     const napAm = getNguHanhNapAm(canChi);
     const cungPhi = getCungPhiBatTrach(namChong, "Nam");
     return { canChi, napAm, cung: cungPhi.cung, hanh: cungPhi.hanh, tuoiMu: currentYear - namChong + 1 };
-  }, [namChong, currentYear]);
+  }, [namChong, isChongValid, namChongInput, currentYear]);
 
   const previewVo = useMemo(() => {
+    if (!isVoValid) {
+      return {
+        canChi: namVoInput ? "Đang nhập..." : "--",
+        napAm: namVoInput ? "Đang nhập..." : "--",
+        cung: "--",
+        hanh: "--",
+        tuoiMu: null as number | null,
+      };
+    }
     const canChi = getCanChiNam(namVo);
     const napAm = getNguHanhNapAm(canChi);
     const cungPhi = getCungPhiBatTrach(namVo, "Nu");
     return { canChi, napAm, cung: cungPhi.cung, hanh: cungPhi.hanh, tuoiMu: currentYear - namVo + 1 };
-  }, [namVo, currentYear]);
+  }, [namVo, isVoValid, namVoInput, currentYear]);
 
   const presets = [
     { label: "1990 - 1992 (Canh Ngọ & Nhâm Thân)", chong: 1990, vo: 1992, id: "1990-1992" },
@@ -69,8 +101,8 @@ export default function XemTuoiVoChongPage() {
   ];
 
   const handleApplyPreset = (chong: number, vo: number, id: string) => {
-    setNamChong(chong);
-    setNamVo(vo);
+    setNamChongInput(String(chong));
+    setNamVoInput(String(vo));
     setActivePreset(id);
   };
 
@@ -154,23 +186,39 @@ export default function XemTuoiVoChongPage() {
                     <span className="w-3 h-3 rounded-full bg-blue-500" />
                     Chồng (Dương Nam)
                   </label>
-                  <span className="text-xs text-muted">Tuổi mụ: {previewChong.tuoiMu} tuổi</span>
+                  <span className="text-xs text-muted">
+                    {previewChong.tuoiMu !== null ? `Tuổi mụ: ${previewChong.tuoiMu} tuổi` : "Đang nhập năm..."}
+                  </span>
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="relative flex items-center">
                     <input
-                      type="number"
-                      min={1940}
-                      max={2035}
-                      value={namChong}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={namChongInput}
                       onChange={(e) => {
-                        setNamChong(parseInt(e.target.value) || 1990);
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setNamChongInput(val);
                         setActivePreset("");
                       }}
-                      className="w-full text-xl font-bold bg-secondary/80 border border-border focus:border-gold rounded-lg px-4 py-2.5 text-foreground outline-none transition"
-                      placeholder="1990"
+                      className="w-full text-xl font-bold bg-secondary/80 border border-border focus:border-gold rounded-lg px-4 py-2.5 text-foreground outline-none transition placeholder:text-muted/30 placeholder:font-normal placeholder:text-sm pr-10"
+                      placeholder="Nhập năm sinh (VD: 1990)"
                     />
+                    {namChongInput && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNamChongInput("");
+                          setActivePreset("");
+                        }}
+                        className="absolute right-3 p-1 text-muted hover:text-foreground text-xs rounded-full hover:bg-white/10 transition cursor-pointer"
+                        title="Xóa trắng ô nhập"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -186,11 +234,11 @@ export default function XemTuoiVoChongPage() {
                   </div>
                   <div>
                     <span className="text-muted block">Cung Phi:</span>
-                    <span className="font-medium text-foreground">Cung {previewChong.cung} ({previewChong.hanh})</span>
+                    <span className="font-medium text-foreground">{previewChong.cung !== "--" ? `Cung ${previewChong.cung} (${previewChong.hanh})` : "--"}</span>
                   </div>
                   <div>
                     <span className="text-muted block">Trạch Mệnh:</span>
-                    <span className="font-medium text-foreground">{ketQua.chong.nhomBatTrach}</span>
+                    <span className="font-medium text-foreground">{isChongValid ? ketQua.chong.nhomBatTrach : "--"}</span>
                   </div>
                 </div>
               </div>
@@ -203,23 +251,39 @@ export default function XemTuoiVoChongPage() {
                     <span className="w-3 h-3 rounded-full bg-rose-500" />
                     Vợ (Âm Nữ)
                   </label>
-                  <span className="text-xs text-muted">Tuổi mụ: {previewVo.tuoiMu} tuổi</span>
+                  <span className="text-xs text-muted">
+                    {previewVo.tuoiMu !== null ? `Tuổi mụ: ${previewVo.tuoiMu} tuổi` : "Đang nhập năm..."}
+                  </span>
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="relative flex items-center">
                     <input
-                      type="number"
-                      min={1940}
-                      max={2035}
-                      value={namVo}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={namVoInput}
                       onChange={(e) => {
-                        setNamVo(parseInt(e.target.value) || 1992);
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setNamVoInput(val);
                         setActivePreset("");
                       }}
-                      className="w-full text-xl font-bold bg-secondary/80 border border-border focus:border-gold rounded-lg px-4 py-2.5 text-foreground outline-none transition"
-                      placeholder="1992"
+                      className="w-full text-xl font-bold bg-secondary/80 border border-border focus:border-gold rounded-lg px-4 py-2.5 text-foreground outline-none transition placeholder:text-muted/30 placeholder:font-normal placeholder:text-sm pr-10"
+                      placeholder="Nhập năm sinh (VD: 1992)"
                     />
+                    {namVoInput && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNamVoInput("");
+                          setActivePreset("");
+                        }}
+                        className="absolute right-3 p-1 text-muted hover:text-foreground text-xs rounded-full hover:bg-white/10 transition cursor-pointer"
+                        title="Xóa trắng ô nhập"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -235,11 +299,11 @@ export default function XemTuoiVoChongPage() {
                   </div>
                   <div>
                     <span className="text-muted block">Cung Phi:</span>
-                    <span className="font-medium text-foreground">Cung {previewVo.cung} ({previewVo.hanh})</span>
+                    <span className="font-medium text-foreground">{previewVo.cung !== "--" ? `Cung ${previewVo.cung} (${previewVo.hanh})` : "--"}</span>
                   </div>
                   <div>
                     <span className="text-muted block">Trạch Mệnh:</span>
-                    <span className="font-medium text-foreground">{ketQua.vo.nhomBatTrach}</span>
+                    <span className="font-medium text-foreground">{isVoValid ? ketQua.vo.nhomBatTrach : "--"}</span>
                   </div>
                 </div>
               </div>

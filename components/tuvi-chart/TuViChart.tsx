@@ -75,10 +75,41 @@ export function TuViChart({
         strokeWidth="1.5"
       />
 
-      {/* 4. Các Đường Trang Trí Tam Hợp / Xung Chiếu & Góc Hoa Văn */}
-      <ChartDecoration />
+      {/* 3. LỚP BACKGROUND: Render nền của 12 Ô Cung + Ô Trung Tâm */}
+      <g id="chart-backgrounds-layer">
+        {chart.palaces.map((palace) => {
+          const palaceX = BOARD_PADDING + palace.gridCol * PALACE_WIDTH;
+          const palaceY = BOARD_PADDING + palace.gridRow * PALACE_HEIGHT;
 
-      {/* 5. Render Đầy Đủ 12 Ô Cung Xung Quanh */}
+          return (
+            <Palace
+              key={`bg-${palace.id}`}
+              palace={palace}
+              x={palaceX}
+              y={palaceY}
+              width={PALACE_WIDTH}
+              height={PALACE_HEIGHT}
+              bgOnly
+            />
+          );
+        })}
+        <ChartCenter
+          user={chart.user}
+          metadata={chart.metadata}
+          chart={chart}
+          x={CENTER_X}
+          y={CENTER_Y}
+          width={CENTER_WIDTH}
+          height={CENTER_HEIGHT}
+          bgOnly
+        />
+      </g>
+
+      {/* 4. LỚP BẢN ĐỒ ĐƯỜNG NỐI NGŨ HÀNH (NGU HANH MAP LINES) */}
+      {/* Nằm TRÊN tất cả nền (không bị che khuất) nhưng DƯỚI text và sao (không che chữ) */}
+      <ChartDecoration chart={chart} />
+
+      {/* 5. LỚP NỘI DUNG 12 Ô CUNG XUNG QUANH: Viền, Con giáp chìm, Tiêu đề, Các Sao, Tứ Hóa */}
       <g id="palaces-layer">
         {chart.palaces.map((palace) => {
           const palaceX = BOARD_PADDING + palace.gridCol * PALACE_WIDTH;
@@ -94,19 +125,22 @@ export function TuViChart({
               height={PALACE_HEIGHT}
               isSelected={selectedPalaceId === palace.id}
               onSelect={() => onSelectPalace?.(palace.id)}
+              contentOnly
             />
           );
         })}
       </g>
 
-      {/* 6. Render Khối Thiên Bàn Trung Tâm (Hàng 2-3, Cột 2-3) */}
+      {/* 6. LỚP NỘI DUNG THIÊN BÀN TRUNG TÂM: Viền, Tia Bát Quái Ngũ Hành, Mandala, Bảng 16 dòng, Ma trận 4x4 */}
       <ChartCenter
         user={chart.user}
         metadata={chart.metadata}
+        chart={chart}
         x={CENTER_X}
         y={CENTER_Y}
         width={CENTER_WIDTH}
         height={CENTER_HEIGHT}
+        contentOnly
       />
     </svg>
   );

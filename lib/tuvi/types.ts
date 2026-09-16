@@ -9,6 +9,9 @@ export interface TraCuuInput {
   thang: number;
   nam: number;
   gio: string; // Tý, Sửu...
+  birthTime?: string; // "07:30"
+  birthHour?: number; // 7
+  birthMinute?: number; // 30
   namXemVanHan?: number;
 }
 
