@@ -2,7 +2,8 @@
 
 import React from "react"
 import { cn } from "@/lib/utils"
-import { ZodiacIllustration, MiniHorseIcon } from "./ZodiacArt"
+import { MiniHorseIcon } from "./ZodiacArt"
+import { ZodiacIcon, getChiTextColor } from "@/components/zodiac/ZodiacIcon"
 
 export interface PalaceCellData {
   chi: string // Tý, Sửu, Dần...
@@ -144,12 +145,11 @@ export function PalaceCell({ cell, isSelected, onClick, isMobileList = false }: 
         isMenh && "bg-opacity-95"
       )}
     >
-      {/* Hình Con Giáp Cắt Giấy Nền Mờ & Hoạt Ảnh (Opacity ~38%, đặt giữa/lệch phải, phóng to nhẹ nhàng khi rê chuột) */}
-      <div className="absolute right-0 md:right-2 top-1/2 -translate-y-1/2 w-36 h-36 md:w-44 md:h-44 pointer-events-none overflow-hidden select-none z-0 transition-transform duration-500 group-hover:scale-110 group-hover:opacity-65">
-        <ZodiacIllustration
+      {/* Hình Con Giáp Watermark nạp từ /public/zodiac/ tô màu bằng CSS mask */}
+      <div className="absolute inset-0 flex items-end justify-center pb-2 pointer-events-none z-0 overflow-hidden">
+        <ZodiacIcon
           chi={chi}
-          opacity={0.38}
-          className="w-full h-full object-contain filter drop-shadow-sm"
+          className={cn("w-[85%] h-[85%] opacity-40", getChiTextColor(chi))}
         />
       </div>
 

@@ -11,3 +11,4 @@ export * from "./ChartDecoration";
 export * from "./TuViChart";
 export * from "./TuViChartViewer";
 export * from "./lines";
+export * from "./ZodiacWatermark";
