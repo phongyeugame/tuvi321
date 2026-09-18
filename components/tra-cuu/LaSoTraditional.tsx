@@ -134,24 +134,30 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
     return Array.from(map.values());
   }, [traditionalLines]);
 
-  // Tải ảnh PNG bằng html2canvas
+  // Tải ảnh PNG bằng html-to-image (chống lỗi lab/oklch màu sắc và hỗ trợ CSS mask)
   const handleDownloadImage = async () => {
     if (!boardRef.current) return
     setIsExporting(true)
     try {
-      const html2canvas = (await import("html2canvas")).default
-      const canvas = await html2canvas(boardRef.current, {
-        scale: 2,
-        useCORS: true,
+      const { toPng } = await import("html-to-image")
+      const dataUrl = await toPng(boardRef.current, {
+        pixelRatio: 2,
         backgroundColor: "#f5ecd7",
+        cacheBust: true,
+        skipFonts: true,
       })
       const link = document.createElement("a")
-      link.download = `La-So-Tu-Vi-${data.input.hoTen.replace(/\s+/g, "_")}.png`
-      link.href = canvas.toDataURL("image/png")
+      const fileName = `La-So-Tu-Vi-${(data.input.hoTen || "Tu-Vi").replace(/\s+/g, "_")}.png`
+      link.download = fileName
+      link.href = dataUrl
+      document.body.appendChild(link)
       link.click()
+      setTimeout(() => {
+        document.body.removeChild(link)
+      }, 1000)
     } catch (err) {
       console.error("Lỗi xuất ảnh:", err)
-      alert("Không thể tải ảnh, bạn có thể dùng chức năng In / Lưu PDF.")
+      alert("Không thể tải ảnh tự động, bạn có thể dùng chức năng In / PDF để lưu lá số.")
     } finally {
       setIsExporting(false)
     }

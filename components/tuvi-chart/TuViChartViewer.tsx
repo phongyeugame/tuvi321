@@ -89,60 +89,44 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `La-So-Tu-Vi-${chart.user.name.replace(/\s+/g, "_")}.svg`;
+      link.download = `La-So-Tu-Vi-${(chart.user.name || "Tu-Vi").replace(/\s+/g, "_")}.svg`;
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 1000);
     } catch (err) {
       console.error("Lỗi xuất SVG:", err);
       alert("Không thể xuất file SVG.");
     }
   };
 
-  // 2. Xuất file PNG độ phân giải cao từ SVG (2x scale = 2328x3840 không vỡ nét)
+  // 2. Xuất file PNG độ phân giải cao bằng html-to-image
   const handleExportPng = async () => {
     if (!svgRef.current) return;
     setIsExporting(true);
     try {
-      const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(svgRef.current);
-      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-      const URL_API = window.URL || window.webkitURL || window;
-      const blobURL = URL_API.createObjectURL(svgBlob);
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(svgRef.current as unknown as HTMLElement, {
+        pixelRatio: 2,
+        backgroundColor: "#FAF6EE",
+        cacheBust: true,
+        skipFonts: true,
+      });
 
-      const image = new Image();
-      image.onload = () => {
-        const scale = 2; // Độ nét cao
-        const canvas = document.createElement("canvas");
-        canvas.width = SVG_WIDTH * scale;
-        canvas.height = SVG_HEIGHT * scale;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        ctx.fillStyle = "#FAF6EE";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-        const pngUrl = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.download = `La-So-Tu-Vi-${chart.user.name.replace(/\s+/g, "_")}.png`;
-        link.href = pngUrl;
-        document.body.appendChild(link);
-        link.click();
+      const link = document.createElement("a");
+      link.download = `La-So-Tu-Vi-${(chart.user.name || "Tu-Vi").replace(/\s+/g, "_")}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
         document.body.removeChild(link);
-        URL_API.revokeObjectURL(blobURL);
-        setIsExporting(false);
-      };
-
-      image.onerror = () => {
-        setIsExporting(false);
-        alert("Lỗi kết xuất ảnh PNG từ SVG.");
-      };
-
-      image.src = blobURL;
+      }, 1000);
     } catch (err) {
       console.error("Lỗi xuất PNG:", err);
+      alert("Không thể kết xuất ảnh PNG, bạn có thể dùng tính năng Xuất SVG hoặc In/PDF.");
+    } finally {
       setIsExporting(false);
     }
   };
