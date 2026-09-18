@@ -17,6 +17,7 @@ import {
   Eye,
   BookOpen,
 } from "lucide-react";
+import { exportLaSoAsPng, exportLaSoAsPdf } from "@/lib/export-la-so";
 
 interface TuViChartViewerProps {
   chart: TuViChartData;
@@ -102,27 +103,13 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
     }
   };
 
-  // 2. Xuất file PNG độ phân giải cao bằng html-to-image
+  // 2. Xuất file PNG độ phân giải cao bằng exportLaSoAsPng
   const handleExportPng = async () => {
     if (!svgRef.current) return;
     setIsExporting(true);
     try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(svgRef.current as unknown as HTMLElement, {
-        pixelRatio: 2,
-        backgroundColor: "#FAF6EE",
-        cacheBust: true,
-        skipFonts: true,
-      });
-
-      const link = document.createElement("a");
-      link.download = `La-So-Tu-Vi-${(chart.user.name || "Tu-Vi").replace(/\s+/g, "_")}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-      }, 1000);
+      const fileName = `La-So-Tu-Vi-${(chart.user.name || "Tu-Vi").replace(/\s+/g, "_")}`;
+      await exportLaSoAsPng(svgRef.current as unknown as HTMLElement, fileName);
     } catch (err) {
       console.error("Lỗi xuất PNG:", err);
       alert("Không thể kết xuất ảnh PNG, bạn có thể dùng tính năng Xuất SVG hoặc In/PDF.");
@@ -131,9 +118,22 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
     }
   };
 
-  // 3. In PDF / Trình duyệt print
-  const handlePrintPdf = () => {
-    window.print();
+  // 3. In PDF hoặc Lưu PDF qua jsPDF
+  const handlePrintPdf = async () => {
+    if (!svgRef.current) {
+      window.print();
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const fileName = `La-So-Tu-Vi-${(chart.user.name || "Tu-Vi").replace(/\s+/g, "_")}`;
+      await exportLaSoAsPdf(svgRef.current as unknown as HTMLElement, fileName);
+    } catch (err) {
+      console.warn("Lỗi xuất PDF qua jsPDF, chuyển về window.print:", err);
+      window.print();
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { tintImage } from "@/lib/tint-image";
 
 export type ChiName =
   | "ty"
@@ -50,26 +51,61 @@ export function getChiSlug(chi?: string): ChiName {
   return CHI_MAP[trimmed] || (trimmed.toLowerCase() as ChiName) || "thin";
 }
 
-// Lấy class màu văn bản chuẩn theo Ngũ Hành của 12 Địa Chi
+// Bảng mã màu HEX cụ thể từng cung theo yêu cầu
+export const CUNG_COLOR_HEX: Record<string, string> = {
+  ty: "#3B82F6",
+  suu: "#DC2626",
+  dan: "#16A34A",
+  mao: "#059669",
+  thin: "#0284C7",
+  ti: "#E11D48",
+  ngo: "#DB2777",
+  mui: "#CA8A04",
+  than: "#64748B",
+  dau: "#D97706",
+  tuat: "#CA8A04",
+  hoi: "#2563EB",
+  // Uppercase aliases
+  "Tý": "#3B82F6",
+  "Sửu": "#DC2626",
+  "Dần": "#16A34A",
+  "Mão": "#059669",
+  "Thìn": "#0284C7",
+  "Tỵ": "#E11D48",
+  "Ngọ": "#DB2777",
+  "Mùi": "#CA8A04",
+  "Thân": "#64748B",
+  "Dậu": "#D97706",
+  "Tuất": "#CA8A04",
+  "Hợi": "#2563EB",
+};
+
+export function getChiColorHex(chi?: string): string {
+  if (!chi) return "#B45309";
+  const slug = getChiSlug(chi);
+  return CUNG_COLOR_HEX[slug] || CUNG_COLOR_HEX[chi] || "#B45309";
+}
+
+// Lấy class màu văn bản chuẩn
 export function getChiTextColor(chi?: string): string {
   const slug = getChiSlug(chi);
   switch (slug) {
-    case "ti": // Tỵ - Hỏa
-    case "ngo": // Ngọ - Hỏa
+    case "ti":
+    case "ngo":
       return "text-[#DC2626]";
-    case "dan": // Dần - Mộc
-    case "mao": // Mão - Mộc
+    case "dan":
+    case "mao":
       return "text-[#15803D]";
-    case "than": // Thân - Kim
-    case "dau": // Dậu - Kim
+    case "than":
+    case "dau":
       return "text-[#475569]";
-    case "ty": // Tý - Thủy
-    case "hoi": // Hợi - Thủy
+    case "ty":
+    case "hoi":
       return "text-[#0284C7]";
-    case "thin": // Thìn - Thổ
-    case "tuat": // Tuất - Thổ
-    case "suu": // Sửu - Thổ
-    case "mui": // Mùi - Thổ
+    case "thin":
+    case "tuat":
+    case "suu":
+    case "mui":
     default:
       return "text-[#B45309]";
   }
@@ -77,26 +113,38 @@ export function getChiTextColor(chi?: string): string {
 
 interface Props {
   chi: ChiName | string;
-  className?: string;
+  color?: string; // truyền màu HEX thật, VD "#F472B6" — KHÔNG dùng className màu nữa
+  className?: string; // chỉ dùng cho w-, h-, opacity-, absolute...
+  onLoaded?: () => void;
 }
 
-export function ZodiacIcon({ chi, className = "" }: Props) {
+export function ZodiacIcon({ chi, color, className = "", onLoaded }: Props) {
+  const [src, setSrc] = useState<string | null>(null);
   const slug = getChiSlug(chi);
+  const targetColor = color || getChiColorHex(chi);
+
+  useEffect(() => {
+    let active = true;
+    tintImage(`/zodiac/${slug}.png`, targetColor).then((url) => {
+      if (active) {
+        setSrc(url);
+        onLoaded?.();
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [slug, targetColor, onLoaded]);
+
+  if (!src) return null; // hoặc hiện skeleton mờ trong lúc chờ tint xong
 
   return (
-    <span
+    <img
+      src={src}
+      alt=""
       aria-hidden="true"
-      className={`block bg-current ${className}`}
-      style={{
-        WebkitMaskImage: `url(/zodiac/${slug}.svg)`,
-        maskImage: `url(/zodiac/${slug}.svg)`,
-        WebkitMaskSize: "contain",
-        maskSize: "contain",
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskPosition: "center",
-        maskPosition: "center",
-      }}
+      className={`object-contain select-none ${className}`}
+      draggable={false}
     />
   );
 }

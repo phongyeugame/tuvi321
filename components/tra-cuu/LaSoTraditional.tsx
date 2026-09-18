@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState, useMemo } from "react"
+import React, { useRef, useState, useMemo, useCallback } from "react"
 import { LaSoTuVi, Cung } from "@/lib/tuvi/types"
 import { PalaceCell, PalaceCellData } from "./PalaceCell"
 import { CenterInfo } from "./CenterInfo"
@@ -15,9 +15,11 @@ import {
   ZoomOut,
   LayoutGrid,
   List,
+  FileText,
 } from "lucide-react"
 import { computeTraditionalLines } from "@/components/tuvi-chart/lines"
 import { getNguHanhColor } from "@/components/tuvi-chart/constants"
+import { exportLaSoAsPng, exportLaSoAsPdf } from "@/lib/export-la-so"
 
 // Vị trí chuẩn của 12 Địa Chi trên bàn cờ 4x4 Tử Vi Bắc Phái
 const TRADITIONAL_GRID_COORDINATES: Record<string, { col: number; row: number; conGiap: string; mauNen: string }> = {
@@ -134,34 +136,50 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
     return Array.from(map.values());
   }, [traditionalLines]);
 
-  // Tải ảnh PNG bằng html-to-image (chống lỗi lab/oklch màu sắc và hỗ trợ CSS mask)
+  // Theo dõi tiến trình tải & tô màu 12 con giáp qua Canvas tintImage
+  const [loadedIcons, setLoadedIcons] = useState<Set<string>>(new Set());
+  const handleIconLoaded = useCallback((chi: string) => {
+    setLoadedIcons((prev) => {
+      if (prev.has(chi)) return prev;
+      const next = new Set(prev);
+      next.add(chi);
+      return next;
+    });
+  }, []);
+  const isAllIconsLoaded = loadedIcons.size >= 12;
+
+  // Tải ảnh PNG chất lượng cao bằng exportLaSoAsPng
   const handleDownloadImage = async () => {
-    if (!boardRef.current) return
-    setIsExporting(true)
+    if (!boardRef.current) return;
+    setIsExporting(true);
     try {
-      const { toPng } = await import("html-to-image")
-      const dataUrl = await toPng(boardRef.current, {
-        pixelRatio: 2,
-        backgroundColor: "#f5ecd7",
-        cacheBust: true,
-        skipFonts: true,
-      })
-      const link = document.createElement("a")
-      const fileName = `La-So-Tu-Vi-${(data.input.hoTen || "Tu-Vi").replace(/\s+/g, "_")}.png`
-      link.download = fileName
-      link.href = dataUrl
-      document.body.appendChild(link)
-      link.click()
-      setTimeout(() => {
-        document.body.removeChild(link)
-      }, 1000)
+      const fileName = `La-So-Tu-Vi-${(data.input.hoTen || "Tu-Vi").replace(/\s+/g, "_")}`;
+      const dataUrl = await exportLaSoAsPng(boardRef.current, fileName);
+      if (typeof window !== "undefined") {
+        (window as any).__EXPORTED_DATA_URL__ = dataUrl;
+      }
     } catch (err) {
-      console.error("Lỗi xuất ảnh:", err)
-      alert("Không thể tải ảnh tự động, bạn có thể dùng chức năng In / PDF để lưu lá số.")
+      console.error("Lỗi xuất ảnh:", err);
+      alert("Không thể tải ảnh tự động, bạn có thể dùng chức năng In / PDF để lưu lá số.");
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
+
+  // Tải file PDF trực tiếp bằng exportLaSoAsPdf
+  const handleDownloadPdf = async () => {
+    if (!boardRef.current) return;
+    setIsExporting(true);
+    try {
+      const fileName = `La-So-Tu-Vi-${(data.input.hoTen || "Tu-Vi").replace(/\s+/g, "_")}`;
+      await exportLaSoAsPdf(boardRef.current, fileName);
+    } catch (err) {
+      console.error("Lỗi xuất PDF:", err);
+      alert("Không thể tạo file PDF tự động, vui lòng dùng chức năng In của trình duyệt.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -237,11 +255,25 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
           <button
             type="button"
             onClick={handleDownloadImage}
-            disabled={isExporting}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#8b3a3a] hover:bg-[#702929] text-white text-xs font-bold transition-all shadow-md shadow-[#8b3a3a]/20 cursor-pointer disabled:opacity-50"
+            disabled={!isAllIconsLoaded || isExporting}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#8b3a3a] hover:bg-[#702929] text-white text-xs font-bold transition-all shadow-md shadow-[#8b3a3a]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!isAllIconsLoaded ? `Đang chuẩn bị hình con giáp (${loadedIcons.size}/12)...` : "Tải ảnh PNG"}
           >
             <Download size={13} />
-            <span>{isExporting ? "Đang xuất..." : "Tải Ảnh Lá Số"}</span>
+            <span>
+              {isExporting ? "Đang xuất..." : !isAllIconsLoaded ? `Chuẩn bị (${loadedIcons.size}/12)...` : "Tải PNG"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={!isAllIconsLoaded || isExporting}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/80 hover:bg-white border border-[#8b3a3a]/30 text-stone-800 text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!isAllIconsLoaded ? `Đang chuẩn bị hình con giáp (${loadedIcons.size}/12)...` : "Tải file PDF"}
+          >
+            <FileText size={13} />
+            <span>Tải PDF</span>
           </button>
 
           <button
@@ -250,7 +282,7 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white border border-[#8b3a3a]/30 text-stone-800 text-xs font-semibold cursor-pointer"
           >
             <Printer size={13} />
-            <span>In / PDF</span>
+            <span>In</span>
           </button>
         </div>
       </div>
@@ -276,6 +308,7 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                   isSelected={selectedChi === cell.chi}
                   onClick={() => setSelectedChi(cell.chi)}
                   isMobileList={false}
+                  onIconLoaded={() => handleIconLoaded(cell.chi)}
                 />
               ))}
 
@@ -375,6 +408,7 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                 isSelected={selectedChi === cell.chi}
                 onClick={() => setSelectedChi(cell.chi)}
                 isMobileList={true}
+                onIconLoaded={() => handleIconLoaded(cell.chi)}
               />
             ))}
           </div>

@@ -2,7 +2,8 @@ import React from "react";
 import { PalaceData } from "./types";
 import { PalaceHeader } from "./PalaceHeader";
 import { StarList } from "./StarList";
-import { ZodiacIcon, getChiTextColor } from "@/components/zodiac/ZodiacIcon";
+import { getChiSlug, getChiTextColor } from "@/components/zodiac/ZodiacIcon";
+import { ZODIAC_COLORED_BASE64 } from "@/components/zodiac/zodiacData";
 
 interface PalaceProps {
   palace: PalaceData;
@@ -98,22 +99,17 @@ export function Palace({
         strokeOpacity={isSelected ? 1 : 0.55}
       />
 
-      {/* 3. Hình Con Giáp Watermark nạp từ /public/zodiac/ tô màu bằng CSS mask */}
-      <foreignObject
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        className="pointer-events-none select-none overflow-hidden"
-        aria-hidden="true"
-      >
-        <div className="w-full h-full flex items-end justify-center pb-2 overflow-hidden">
-          <ZodiacIcon
-            chi={palace.earthlyBranch || palace.branch}
-            className={`w-[85%] h-[85%] opacity-40 ${getChiTextColor(palace.earthlyBranch || palace.branch)}`}
-          />
-        </div>
-      </foreignObject>
+      {/* 3. Hình Con Giáp Watermark nạp từ /public/zodiac/ (Native SVG image) */}
+      <image
+        href={ZODIAC_COLORED_BASE64[getChiSlug(palace.earthlyBranch || palace.branch)]}
+        x={x + width * 0.075}
+        y={y + height * 0.12}
+        width={width * 0.85}
+        height={height * 0.85}
+        preserveAspectRatio="xMidYMid meet"
+        opacity={0.4}
+        className="pointer-events-none select-none"
+      />
 
       {/* 4. Header Ô Cung */}
       <PalaceHeader palace={palace} x={x} y={y} width={width} />

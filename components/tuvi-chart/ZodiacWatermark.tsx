@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { ZodiacIcon, getChiTextColor, getChiSlug } from "@/components/zodiac/ZodiacIcon";
+import { ZodiacIcon, getChiTextColor, getChiSlug, getChiColorHex } from "@/components/zodiac/ZodiacIcon";
+import { ZODIAC_COLORED_BASE64 } from "@/components/zodiac/zodiacData";
 import { NguHanh } from "./types";
 import { getNguHanhColor } from "./constants";
 import { getBranchNguHanh } from "./lines";
@@ -106,29 +107,26 @@ export function ZodiacWatermark({
       >
         <ZodiacIcon
           chi={branch}
-          className={`w-[85%] h-[85%] opacity-40 ${colorClass}`}
+          color={color || getChiColorHex(branch)}
+          className="w-[85%] h-[85%] opacity-40"
         />
       </div>
     );
   }
 
-  // Khi hiển thị trong SVG Lá Số Chuẩn (ForeignObject bên trong SVG Canvas)
+  // Khi hiển thị trong SVG Lá Số Chuẩn (Native SVG image chống lỗi canvas export)
   return (
-    <foreignObject
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      className={`pointer-events-none select-none overflow-hidden ${className}`}
+    <image
+      href={ZODIAC_COLORED_BASE64[getChiSlug(branch)]}
+      x={x + width * 0.075}
+      y={y + height * 0.12}
+      width={width * 0.85}
+      height={height * 0.85}
+      preserveAspectRatio="xMidYMid meet"
+      opacity={opacity ?? 0.4}
+      className={`pointer-events-none select-none ${className}`}
       aria-hidden="true"
-    >
-      <div className="w-full h-full flex items-end justify-center pb-2 pointer-events-none overflow-hidden">
-        <ZodiacIcon
-          chi={branch}
-          className={`w-[85%] h-[85%] opacity-40 ${colorClass}`}
-        />
-      </div>
-    </foreignObject>
+    />
   );
 }
 

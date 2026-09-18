@@ -3,7 +3,7 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 import { MiniHorseIcon } from "./ZodiacArt"
-import { ZodiacIcon, getChiTextColor } from "@/components/zodiac/ZodiacIcon"
+import { ZodiacIcon, getChiTextColor, getChiColorHex } from "@/components/zodiac/ZodiacIcon"
 
 export interface PalaceCellData {
   chi: string // Tý, Sửu, Dần...
@@ -43,6 +43,7 @@ interface PalaceCellProps {
   isSelected: boolean
   onClick: () => void
   isMobileList?: boolean
+  onIconLoaded?: () => void
 }
 
 import { NGU_HANH_COLORS, getStarNguHanh } from "@/components/tuvi-chart/constants"
@@ -107,7 +108,13 @@ function getStarTextColor(saoName: string): string {
   }
 }
 
-export function PalaceCell({ cell, isSelected, onClick, isMobileList = false }: PalaceCellProps) {
+export function PalaceCell({
+  cell,
+  isSelected,
+  onClick,
+  isMobileList = false,
+  onIconLoaded,
+}: PalaceCellProps) {
   const {
     chi,
     tenCung,
@@ -145,11 +152,13 @@ export function PalaceCell({ cell, isSelected, onClick, isMobileList = false }: 
         isMenh && "bg-opacity-95"
       )}
     >
-      {/* Hình Con Giáp Watermark nạp từ /public/zodiac/ tô màu bằng CSS mask */}
+      {/* Hình Con Giáp Watermark tô màu qua tintImage Canvas API */}
       <div className="absolute inset-0 flex items-end justify-center pb-2 pointer-events-none z-0 overflow-hidden">
         <ZodiacIcon
           chi={chi}
-          className={cn("w-[85%] h-[85%] opacity-40", getChiTextColor(chi))}
+          color={getChiColorHex(chi)}
+          className="w-[85%] h-[85%] opacity-40"
+          onLoaded={onIconLoaded}
         />
       </div>
 
