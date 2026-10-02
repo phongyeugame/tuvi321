@@ -29,6 +29,14 @@ export interface SaoChiTiet {
   loai?: "chinh" | "cat" | "hung" | "luu";
 }
 
+export interface LuanGiai {
+  chinhTinhTuaThu: string; // "Thiên Phủ (M)"
+  catTinhHoiTu: string[]; // ["Tấu Thư", "Ân Quang", "Thiên Quý", "Hoa Cái"]
+  hungSatTinh: string[]; // ["Bạch Hổ", "Thiên Khốc"]
+  loiKhuyen: string; // đoạn văn luận giải + lời khuyên, 3-5 câu
+  danhGiaTongQuan?: "tot" | "kha" | "trung-binh" | "xau"; // để tô màu badge
+}
+
 export interface Cung {
   ten: string; // Mệnh, Phụ Mẫu, Phúc Đức...
   viTri: string; // Tý, Sửu, Dần...
@@ -47,7 +55,7 @@ export interface Cung {
   catTinh?: string[];
   hungTinh?: string[];
   tuHoa?: string[]; // Phi tinh: Hóa lộc, Hóa quyền, Hóa khoa, Hóa kỵ
-  luanGiai?: string;
+  luanGiai?: LuanGiai | string;
 }
 
 export interface LaSoTuVi {

@@ -20,6 +20,7 @@ import {
 import { computeTraditionalLines } from "@/components/tuvi-chart/lines"
 import { getNguHanhColor } from "@/components/tuvi-chart/constants"
 import { exportLaSoAsPng, exportLaSoAsPdf } from "@/lib/export-la-so"
+import { LuanGiaiSection } from "./LuanGiaiSection"
 
 // Vị trí chuẩn của 12 Địa Chi trên bàn cờ 4x4 Tử Vi Bắc Phái
 const TRADITIONAL_GRID_COORDINATES: Record<string, { col: number; row: number; conGiap: string; mauNen: string }> = {
@@ -48,9 +49,15 @@ interface LaSoTraditionalProps {
 export function LaSoTraditional({ data }: LaSoTraditionalProps) {
   const boardRef = useRef<HTMLDivElement>(null)
   const [selectedChi, setSelectedChi] = useState<string>(data.cungMenh || "Hợi")
+  const [selectionKey, setSelectionKey] = useState<string>(`${data.cungMenh || "Hợi"}-0`)
   const [zoomLevel, setZoomLevel] = useState<number>(1)
   const [isExporting, setIsExporting] = useState<boolean>(false)
   const [layoutView, setLayoutView] = useState<"grid" | "list">("grid")
+
+  const handleSelectPalace = useCallback((chi: string) => {
+    setSelectedChi(chi)
+    setSelectionKey(`${chi}-${Date.now()}`)
+  }, [])
 
   const adminName = data.adminName || "Nguyễn Quốc Trưởng"
   const adminPhone = data.adminPhone || "0865341434"
@@ -291,8 +298,12 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
       {layoutView === "grid" ? (
         <div className="overflow-x-auto pb-4 scrollbar-thin">
           <div
-            style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top center" }}
-            className="transition-transform duration-200 min-w-[840px] md:min-w-[940px] lg:min-w-[1020px] mx-auto"
+            style={{
+              transform: `scale(${zoomLevel})`,
+              transformOrigin: "top center",
+              willChange: "transform",
+            }}
+            className="min-w-[840px] md:min-w-[940px] lg:min-w-[1020px] mx-auto"
           >
             {/* Bàn cờ nền giấy màu kem (#f5ecd7), viền nét đứt (#8b3a3a) */}
             <div
@@ -306,7 +317,7 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                   key={cell.chi}
                   cell={cell}
                   isSelected={selectedChi === cell.chi}
-                  onClick={() => setSelectedChi(cell.chi)}
+                  onClick={() => handleSelectPalace(cell.chi)}
                   isMobileList={false}
                   onIconLoaded={() => handleIconLoaded(cell.chi)}
                 />
@@ -406,7 +417,7 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
                 key={cell.chi}
                 cell={cell}
                 isSelected={selectedChi === cell.chi}
-                onClick={() => setSelectedChi(cell.chi)}
+                onClick={() => handleSelectPalace(cell.chi)}
                 isMobileList={true}
                 onIconLoaded={() => handleIconLoaded(cell.chi)}
               />
@@ -415,63 +426,15 @@ export function LaSoTraditional({ data }: LaSoTraditionalProps) {
         </div>
       )}
 
-      {/* 3. Panel Chi Tiết Cung Vị Được Chọn */}
-      <div className="p-5 md:p-6 rounded-2xl bg-[#ede3cb] border border-[#8b3a3a]/40 shadow-xl text-stone-900 no-print">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#8b3a3a]/30 pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-[#8b3a3a]" />
-            <h3 className="font-serif font-black text-lg md:text-xl text-[#602323]">
-              Luận Giải Chi Tiết Cung {activePalace.tenCung} ({activePalace.chi})
-            </h3>
-            {activePalace.isThan && (
-              <span className="bg-[#443834] text-white text-xs px-2 py-0.5 rounded font-bold">
-                Thân Cư Ở Đây
-              </span>
-            )}
-          </div>
-          <span className="text-xs text-stone-600 font-medium">
-            Đại vận {activePalace.daiVan} tuổi | {activePalace.namTrangThai} | {activePalace.tieuHanNam}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
-          <div className="space-y-3 bg-white/60 p-4 rounded-xl border border-[#8b3a3a]/20">
-            <div>
-              <span className="text-stone-600 font-medium">Chính Tinh Tọa Thủ: </span>
-              {activePalace.saoChinh.length > 0 ? (
-                <span className="font-bold text-red-700">
-                  {activePalace.saoChinh.map((s) => `${s.ten} (${s.trangThai})`).join(", ")}
-                </span>
-              ) : (
-                <span className="italic text-stone-500">Vô Chính Diệu (mượn chính tinh cung đối chiếu)</span>
-              )}
-            </div>
-
-            <div>
-              <span className="text-stone-600 font-medium">Cát Tinh Hội Tụ: </span>
-              <span className="text-emerald-800 font-medium">
-                {activePalace.saoCat.join(", ") || "Hài hòa"}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-stone-600 font-medium">Sát & Bại Tinh: </span>
-              <span className="text-rose-800 font-bold">
-                {activePalace.saoHung.join(", ") || "Yên ổn"}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-white/80 p-4 rounded-xl border border-[#8b3a3a]/30">
-            <h4 className="font-bold text-[#602323] text-xs uppercase tracking-wider mb-2 font-serif">
-              Lời Khuyên & Luận Giải Tử Vi
-            </h4>
-            <p className="text-stone-800 leading-relaxed text-xs">
-              {activePalace.luanGiai || "Cung vị vững vàng, vận trình hanh thông nếu nắm bắt đúng thời cơ và tích phúc đức."}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* 3. Phần Luận Giải Chi Tiết 12 Cung */}
+      <LuanGiaiSection
+        cungList={data.cung}
+        cungMenh={data.cungMenh}
+        cungThan={data.cungThan}
+        selectedChi={selectedChi}
+        selectionKey={selectionKey}
+        onSelectPalace={setSelectedChi}
+      />
     </div>
   )
 }

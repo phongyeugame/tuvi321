@@ -304,7 +304,7 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
         /* CHẾ ĐỘ 1: XEM TOÀN CẢNH - TOÀN BỘ 12 CUNG VỪA VẶN MÀN HÌNH KHÔNG CẦN CUỘN */
         <div className="w-full flex justify-center items-center py-2 min-h-[70vh] max-h-[calc(100vh-140px)]">
           <div
-            className="h-full shadow-2xl rounded-xl overflow-hidden border border-[#8b3a3a]/40 bg-[#FAF6EE] flex items-center justify-center transition-all duration-300"
+            className="h-full shadow-2xl rounded-xl overflow-hidden border border-[#8b3a3a]/40 bg-[#FAF6EE] flex items-center justify-center"
             style={{
               maxHeight: isFullscreen ? "calc(100vh - 100px)" : "calc(100vh - 160px)",
               aspectRatio: `${SVG_WIDTH} / ${SVG_HEIGHT}`,
@@ -324,7 +324,7 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
         /* CHẾ ĐỘ 2: VỪA CHIỀU RỘNG - KHÔNG BỊ TRÀN NGANG, 4 CỘT HIỂN THỊ ĐỦ TRÊN MỌI MÀN HÌNH (MOBILE / TABLET / DESKTOP) */
         <div className="w-full flex justify-center py-2 pb-14">
           <div
-            className="w-full max-w-[1164px] shadow-2xl rounded-xl overflow-hidden border border-[#8b3a3a]/40 bg-[#FAF6EE] transition-all duration-300"
+            className="w-full max-w-[1164px] shadow-2xl rounded-xl overflow-hidden border border-[#8b3a3a]/40 bg-[#FAF6EE]"
             style={{
               aspectRatio: `${SVG_WIDTH} / ${SVG_HEIGHT}`,
             }}
@@ -346,8 +346,9 @@ export function TuViChartViewer({ chart, onBack }: TuViChartViewerProps) {
               minWidth: `${Math.round(SVG_WIDTH * zoomLevel)}px`,
               aspectRatio: `${SVG_WIDTH} / ${SVG_HEIGHT}`,
               margin: "0 auto",
+              willChange: "transform",
             }}
-            className="shadow-2xl rounded-xl overflow-hidden border border-[#8b3a3a]/40 bg-[#FAF6EE] transition-all duration-200"
+            className="shadow-2xl rounded-xl overflow-hidden border border-[#8b3a3a]/40 bg-[#FAF6EE]"
           >
             <TuViChart
               svgRef={svgRef}

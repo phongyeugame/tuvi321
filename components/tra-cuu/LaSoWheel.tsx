@@ -190,7 +190,9 @@ export function LaSoWheel({ data }: { data: LaSoTuVi }) {
                   <h4 className="text-sm font-bold text-gold">Luận Giải Cung Vị</h4>
                 </div>
                 <p className="text-foreground/90 leading-relaxed text-sm bg-black/30 p-4 rounded-xl border border-border/50">
-                  {selectedCung.luanGiai || "Chưa có lời giải chi tiết cho cung này."}
+                  {typeof selectedCung.luanGiai === "object"
+                    ? selectedCung.luanGiai.loiKhuyen
+                    : selectedCung.luanGiai || "Chưa có lời giải chi tiết cho cung này."}
                 </p>
               </div>
             </div>
@@ -256,7 +258,9 @@ export function LaSoWheel({ data }: { data: LaSoTuVi }) {
 
                 {isSelected && (
                   <div className="mt-4 pt-3 border-t border-gold/30 text-xs text-gold-light leading-relaxed">
-                    {cung.luanGiai}
+                    {typeof cung.luanGiai === "object"
+                      ? cung.luanGiai.loiKhuyen
+                      : cung.luanGiai}
                   </div>
                 )}
               </div>

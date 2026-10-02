@@ -15,7 +15,7 @@ function KetQuaContent() {
   const [data, setData] = useState<LaSoTuVi | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [viewMode, setViewMode] = useState<"svg" | "traditional" | "wheel">("svg")
+  const [viewMode, setViewMode] = useState<"svg" | "traditional" | "wheel">("traditional")
 
   useEffect(() => {
     const fetchData = async () => {

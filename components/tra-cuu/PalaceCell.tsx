@@ -35,7 +35,7 @@ export interface PalaceCellData {
   conGiap: string
   gridCol: number
   gridRow: number
-  luanGiai?: string
+  luanGiai?: string | any
 }
 
 interface PalaceCellProps {
@@ -108,7 +108,7 @@ function getStarTextColor(saoName: string): string {
   }
 }
 
-export function PalaceCell({
+export const PalaceCell = React.memo(function PalaceCell({
   cell,
   isSelected,
   onClick,
@@ -146,9 +146,9 @@ export function PalaceCell({
         gridRow: !isMobileList ? `${gridRow} / ${gridRow + 1}` : undefined,
       }}
       className={cn(
-        "relative p-2 flex flex-col justify-between border-dashed border-[#8b3a3a] transition-all duration-300 cursor-pointer overflow-hidden group select-none",
+        "relative p-2 flex flex-col justify-between border-dashed border-[#8b3a3a] cursor-pointer overflow-hidden group select-none",
         !isMobileList ? "min-h-[215px] md:min-h-[230px] border" : "rounded-xl border-2 mb-3",
-        isSelected && "ring-2 ring-[#8b3a3a] shadow-xl z-10 scale-[1.01]",
+        isSelected && "ring-2 ring-[#8b3a3a] shadow-xl z-10",
         isMenh && "bg-opacity-95"
       )}
     >
@@ -293,4 +293,4 @@ export function PalaceCell({
       </div>
     </div>
   )
-}
+});

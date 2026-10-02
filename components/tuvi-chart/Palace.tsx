@@ -71,7 +71,7 @@ export function Palace({
   return (
     <g
       id={`palace-${palace.id}`}
-      className="palace-cell cursor-pointer transition-all duration-200 select-none"
+      className="palace-cell cursor-pointer select-none"
       onClick={onSelect}
     >
       {/* 1. Nền ô cung (Màu pastel dịu nhẹ theo Địa Chi - bỏ qua nếu contentOnly vì đã render ở background-layer) */}

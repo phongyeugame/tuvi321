@@ -118,35 +118,43 @@ interface Props {
   onLoaded?: () => void;
 }
 
-export function ZodiacIcon({ chi, color, className = "", onLoaded }: Props) {
-  const [src, setSrc] = useState<string | null>(null);
-  const slug = getChiSlug(chi);
-  const targetColor = color || getChiColorHex(chi);
+export const ZodiacIcon = React.memo(
+  function ZodiacIcon({ chi, color, className = "", onLoaded }: Props) {
+    const [src, setSrc] = useState<string | null>(null);
+    const slug = getChiSlug(chi);
+    const targetColor = color || getChiColorHex(chi);
 
-  useEffect(() => {
-    let active = true;
-    tintImage(`/zodiac/${slug}.png`, targetColor).then((url) => {
-      if (active) {
-        setSrc(url);
-        onLoaded?.();
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [slug, targetColor, onLoaded]);
+    useEffect(() => {
+      let active = true;
+      tintImage(`/zodiac/${slug}.png`, targetColor).then((url) => {
+        if (active) {
+          setSrc(url);
+          onLoaded?.();
+        }
+      });
+      return () => {
+        active = false;
+      };
+    }, [slug, targetColor]);
 
-  if (!src) return null; // hoặc hiện skeleton mờ trong lúc chờ tint xong
+    if (!src) return null;
 
-  return (
-    <img
-      src={src}
-      alt=""
-      aria-hidden="true"
-      className={`object-contain select-none ${className}`}
-      draggable={false}
-    />
-  );
-}
+    return (
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className={`object-contain select-none ${className}`}
+        draggable={false}
+      />
+    );
+  },
+  (prev, next) =>
+    prev.chi === next.chi &&
+    prev.color === next.color &&
+    prev.className === next.className
+);
 
 export default ZodiacIcon;

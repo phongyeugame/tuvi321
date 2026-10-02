@@ -5,6 +5,7 @@ import { convertSolarToLunar, convertLunarToSolar } from "@/lib/tuvi/lunar-conve
 import { getCanChiNam, getCanChiThang, getCanChiNgay, getCanChiGio, CHI, CAN } from "@/lib/tuvi/can-chi";
 import { getViTriCungMenh, getViTriCungThan, getNguHanhNapAm, getCuc } from "@/lib/tuvi/cung-menh";
 import { anChinhTinhChiTiet, anPhuTinhDayDu } from "@/lib/tuvi/an-sao";
+import { getLuanGiaiForCung } from "@/data/mock-luan-giai";
 
 const CHU_MENH_MAP: Record<number, string> = {
   0: "Tham Lang", 1: "Cự Môn", 2: "Lộc Tồn", 3: "Văn Khúc",
@@ -261,7 +262,7 @@ export async function POST(request: Request) {
       // Chi năm niên hạn trên bàn cờ chuẩn (Khởi Tý tại Dần đếm thuận)
       const tieuHanChi = CHI[(chiIndex - 2 + 12) % 12];
 
-      cungList.push({
+      const cungItem: Cung = {
         ten: tenCungThuTu[i],
         viTri: chiName,
         canChi: canChiCungMap[chiIndex]?.full,
@@ -279,12 +280,10 @@ export async function POST(request: Request) {
         catTinh: catList,
         hungTinh: hungList,
         tuHoa: tuHoaCung,
-        luanGiai: `Cung ${tenCungThuTu[i]} tại ${chiName}. ${
-          ctList.length
-            ? "Chính tinh: " + ctList.map((s) => `${s.ten} (${s.trangThai})`).join(", ")
-            : "Cung Vô Chính Diệu, mượn ánh sáng cung xung chiếu."
-        }. Hội tụ các cát tinh (${catList.slice(0, 3).join(", ") || "Hài hòa"}) và hung sát tinh (${hungList.slice(0, 3).join(", ") || "Yên ổn"}).`
-      });
+      };
+
+      cungItem.luanGiai = getLuanGiaiForCung(cungItem);
+      cungList.push(cungItem);
     }
 
     // 9. Tính tuổi mụ & thông tin Thiên Bàn
